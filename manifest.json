@@ -2,7 +2,7 @@
   "name": "N5 Sentence Builder",
   "short_name": "N5 Builder",
   "description": "Master Japanese N5 sentences by building them word by word",
-  "start_url": "/index.html",
+  "start_url": "/n5-sentence-builder/index.html",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#1a73e8",
