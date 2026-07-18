@@ -1,0 +1,994 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>N5 Sentence Builder</title>
+    
+    <!-- ===== PWA META TAGS ===== -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#1a73e8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
+    
+    <style>
+      /* ============================================================
+           GLOBAL RESET & BASE
+           ============================================================ */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+        background: #f5f0eb;
+        color: #1a1a1a;
+        min-height: 100vh;
+        padding: 16px;
+      }
+
+      .app-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 24px 28px 32px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      /* ============================================================
+           HEADER
+           ============================================================ */
+      .app-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 2px solid #e8e0d6;
+        padding-bottom: 14px;
+        margin-bottom: 18px;
+        gap: 10px;
+      }
+
+      .app-header h1 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #2c241c;
+        letter-spacing: -0.3px;
+      }
+      .app-header h1 span {
+        font-weight: 300;
+        color: #8a7a6a;
+        font-size: 0.9rem;
+      }
+
+      .header-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+        align-items: center;
+      }
+
+      .header-controls label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #5a4e3e;
+      }
+
+      .header-controls select,
+      .header-controls button {
+        font-size: 0.75rem;
+        padding: 4px 12px;
+        border-radius: 30px;
+        border: 1px solid #d4c9b8;
+        background: #faf8f5;
+        cursor: pointer;
+        font-family: inherit;
+        transition: 0.15s;
+      }
+
+      .header-controls select:hover,
+      .header-controls button:hover {
+        background: #f0ebe3;
+      }
+
+      .header-controls .toggle-btn {
+        background: #e8e0d6;
+        border-color: #c8bcaa;
+        font-weight: 500;
+        min-width: 60px;
+        text-align: center;
+      }
+      .header-controls .toggle-btn.active {
+        background: #b8a58b;
+        border-color: #9e8a72;
+        color: white;
+      }
+
+      .header-controls .speed-btn {
+        background: #f0ebe3;
+        border-color: #d4c9b8;
+        padding: 4px 10px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        min-width: 40px;
+        text-align: center;
+      }
+      .header-controls .speed-btn.active {
+        background: #8a7a6a;
+        border-color: #6b5f4e;
+        color: white;
+      }
+
+      /* ============================================================
+           PROGRESS SECTION
+           ============================================================ */
+      .progress-section {
+        margin-bottom: 16px;
+      }
+
+      .progress-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 20px;
+        font-size: 0.8rem;
+        color: #3d352b;
+        margin-bottom: 6px;
+      }
+      .progress-stats .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+      .progress-stats .stat-item .stat-value {
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+      .progress-stats .stat-item .stat-label {
+        color: #7a6f60;
+      }
+      .progress-stats .stat-item.correct .stat-value {
+        color: #2d7a4a;
+      }
+      .progress-stats .stat-item.incorrect .stat-value {
+        color: #b34a4a;
+      }
+
+      .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background: #e8e0d6;
+        border-radius: 20px;
+        overflow: hidden;
+      }
+      .progress-bar {
+        height: 100%;
+        background: #5a8a6a;
+        border-radius: 20px;
+        transition: width 0.5s ease;
+        width: 0%;
+      }
+      .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.7rem;
+        color: #7a6f60;
+        margin-top: 4px;
+      }
+
+      /* ============================================================
+           SENTENCE AREA - Dark Black Text, White Background, Larger Fonts
+           ============================================================ */
+      .sentence-area {
+        background: #ffffff;
+        border: 2px solid #e8e0d6;
+        border-radius: 16px;
+        padding: 20px 24px 18px;
+        margin-bottom: 14px;
+        min-height: 140px;
+      }
+
+      .sentence-area .translation-toggle {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 8px;
+      }
+      .sentence-area .translation-toggle button {
+        background: none;
+        border: 1px solid #d4c9b8;
+        border-radius: 30px;
+        padding: 3px 14px;
+        font-size: 0.7rem;
+        color: #5a4e3e;
+        cursor: pointer;
+        font-family: inherit;
+        transition: 0.15s;
+      }
+      .sentence-area .translation-toggle button:hover {
+        background: #f0ebe3;
+      }
+      .sentence-area .translation-toggle button.active {
+        background: #b8a58b;
+        border-color: #9e8a72;
+        color: white;
+      }
+
+      .sentence-jp {
+        font-size: 1.9rem;
+        line-height: 2.6;
+        color: #000000;
+        padding: 8px 4px;
+        word-break: break-word;
+        font-family:
+          "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+        min-height: 70px;
+        background: #ffffff;
+      }
+
+      .sentence-jp ruby {
+        ruby-align: center;
+      }
+      .sentence-jp ruby rt {
+        color: #8b0000;
+        font-size: 1rem;
+        font-weight: 300;
+        letter-spacing: 0.3px;
+      }
+
+      .sentence-jp .blank-slot {
+        display: inline-block;
+        min-width: 70px;
+        border-bottom: 3px dashed #8a7a6a;
+        margin: 0 2px;
+        padding: 0 8px 2px 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.15s;
+        background: #cdee99;
+        border-radius: 0 0 4px 4px;
+        min-height: 55px;
+        vertical-align: bottom;
+        font-size: 1.9rem;
+        color: #000000;
+        position: relative;
+      }
+      .sentence-jp .blank-slot.highlight {
+        background: #f5e3c4;
+        border-bottom-color: #b8a58b;
+      }
+      .sentence-jp .blank-slot.filled {
+        border-bottom-style: solid;
+        border-bottom-color: #5a8a6a;
+        background: #eaf5ea;
+      }
+      .sentence-jp .blank-slot.correct {
+        border-bottom-color: #2d7a4a;
+        background: #d4e8d4;
+      }
+      .sentence-jp .blank-slot.incorrect {
+        border-bottom-color: #b34a4a;
+        background: #f8d4d4;
+      }
+
+      .sentence-jp .blank-slot .placed-word {
+        display: inline-block;
+        font-size: 1.9rem;
+        color: #000000;
+        cursor: pointer;
+      }
+      .sentence-jp .blank-slot .placed-word ruby {
+        ruby-align: center;
+      }
+      .sentence-jp .blank-slot .placed-word ruby rt {
+        color: #8b0000;
+        font-size: 1rem;
+      }
+      .sentence-jp .blank-slot .blank-number {
+        font-size: 0.7rem;
+        color: #b8a58b;
+        display: block;
+        margin-top: -4px;
+      }
+
+      .sentence-en {
+        font-size: 0.95rem;
+        color: #5a4e3e;
+        padding: 10px 4px 4px 4px;
+        border-top: 1px dashed #e0d8ce;
+        margin-top: 10px;
+        display: none;
+        font-style: italic;
+      }
+      .sentence-en.visible {
+        display: block;
+      }
+
+      .sentence-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+        align-items: center;
+      }
+
+      .sentence-controls .sentence-hint {
+        font-size: 0.75rem;
+        color: #8a7a6a;
+        font-style: italic;
+      }
+
+      /* ============================================================
+           WORD BANK - Dark Black Text, White Background, Larger Fonts
+           ============================================================ */
+      .word-bank-area {
+        background: #faf8f5;
+        border: 2px solid #e8e0d6;
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 14px;
+        min-height: 80px;
+      }
+
+      .word-bank-label {
+        font-size: 0.8rem;
+        color: #7a6f60;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .word-bank-label .bank-count {
+        font-weight: 500;
+        color: #3d352b;
+      }
+
+      .word-bank {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        min-height: 50px;
+        align-items: center;
+      }
+
+      .word-bank .bank-word {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 20px;
+        background: #ffffff;
+        border: 2px solid #d4c9b8;
+        border-radius: 30px;
+        font-size: 1.4rem;
+        color: #000000;
+        cursor: pointer;
+        transition: 0.15s;
+        user-select: none;
+        font-family:
+          "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+        min-width: 55px;
+        gap: 0 6px;
+        position: relative;
+      }
+      .word-bank .bank-word:hover {
+        background: #f0ebe3;
+        border-color: #b8a58b;
+        transform: scale(1.02);
+      }
+      .word-bank .bank-word:active {
+        transform: scale(0.95);
+      }
+      .word-bank .bank-word.selected {
+        background: #f5e3c4;
+        border-color: #b8a58b;
+        box-shadow: 0 0 0 3px rgba(184, 165, 139, 0.25);
+      }
+      .word-bank .bank-word.used {
+        opacity: 0.25;
+        pointer-events: none;
+        cursor: default;
+        transform: none;
+      }
+      .word-bank .bank-word ruby {
+        ruby-align: center;
+      }
+      .word-bank .bank-word ruby rt {
+        color: #8b0000;
+        font-size: 0.6rem;
+        font-weight: 300;
+      }
+      .word-bank .bank-word .word-tts-btn {
+        background: none;
+        border: none;
+        font-size: 0.7rem;
+        cursor: pointer;
+        color: #5a7a8a;
+        padding: 0 2px 0 8px;
+        transition: 0.15s;
+        font-family: inherit;
+        line-height: 1;
+      }
+      .word-bank .bank-word .word-tts-btn:hover {
+        color: #3a5a6a;
+        transform: scale(1.2);
+      }
+
+      .word-bank .empty-bank-message {
+        color: #b8a58b;
+        font-size: 0.9rem;
+        font-style: italic;
+        padding: 8px 0;
+      }
+
+      /* ============================================================
+           ACTION CONTROLS
+           ============================================================ */
+      .action-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 12px;
+        align-items: center;
+      }
+
+      .action-btn {
+        padding: 10px 24px;
+        border-radius: 40px;
+        border: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: inherit;
+        transition: 0.15s;
+        background: #e8e0d6;
+        color: #3d352b;
+      }
+      .action-btn:hover:not(:disabled) {
+        transform: scale(0.97);
+        background: #ddd4c8;
+      }
+      .action-btn:active:not(:disabled) {
+        transform: scale(0.95);
+      }
+      .action-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .action-btn.primary {
+        background: #5a8a6a;
+        color: white;
+      }
+      .action-btn.primary:hover:not(:disabled) {
+        background: #4a7a5a;
+      }
+
+      .action-btn.danger {
+        background: #b34a4a;
+        color: white;
+      }
+      .action-btn.danger:hover:not(:disabled) {
+        background: #a33a3a;
+      }
+
+      .action-btn.secondary {
+        background: #8a7a6a;
+        color: white;
+      }
+      .action-btn.secondary:hover:not(:disabled) {
+        background: #7a6a5a;
+      }
+
+      .action-btn.sentence-tts {
+        background: #4a7a8a;
+        color: white;
+      }
+      .action-btn.sentence-tts:hover:not(:disabled) {
+        background: #3a6a7a;
+      }
+
+      /* ============================================================
+           FEEDBACK AREA
+           ============================================================ */
+      .feedback-area {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        display: none;
+        font-size: 0.95rem;
+        line-height: 1.6;
+      }
+      .feedback-area.visible {
+        display: block;
+      }
+      .feedback-area.success {
+        background: #eaf5ea;
+        border: 2px solid #5a8a6a;
+        color: #1a4a2a;
+      }
+      .feedback-area.error {
+        background: #f8ecec;
+        border: 2px solid #b34a4a;
+        color: #5a2a2a;
+      }
+      .feedback-area .feedback-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 4px;
+      }
+      .feedback-area .feedback-detail {
+        font-size: 0.9rem;
+        color: #3d352b;
+      }
+      .feedback-area .feedback-detail .correct-word {
+        font-weight: 600;
+        color: #2d7a4a;
+      }
+      .feedback-area .feedback-detail .wrong-word {
+        font-weight: 600;
+        color: #b34a4a;
+      }
+      .feedback-area .feedback-detail .grammar-hint {
+        display: block;
+        margin-top: 6px;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        color: #3d352b;
+        border-left: 3px solid #8a7a6a;
+      }
+
+      /* ============================================================
+           COMPLETION OVERLAY
+           ============================================================ */
+      .completion-overlay {
+        display: none;
+        background: #ffffff;
+        border: 3px solid #5a8a6a;
+        border-radius: 20px;
+        padding: 32px 28px;
+        text-align: center;
+        margin-top: 8px;
+      }
+      .completion-overlay.visible {
+        display: block;
+      }
+      .completion-overlay h2 {
+        font-size: 1.8rem;
+        color: #2d7a4a;
+        margin-bottom: 6px;
+      }
+      .completion-overlay .completion-stats {
+        font-size: 1rem;
+        color: #3d352b;
+        margin: 12px 0;
+        line-height: 1.8;
+      }
+      .completion-overlay .completion-stats .highlight-num {
+        font-weight: 700;
+        color: #1a1a1a;
+      }
+      .completion-overlay .completion-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+
+      /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+      @media (max-width: 700px) {
+        .app-container {
+          padding: 14px 12px 18px;
+        }
+        .app-header {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
+        }
+        .app-header h1 {
+          font-size: 1.1rem;
+          text-align: center;
+        }
+        .app-header h1 span {
+          display: block;
+          font-size: 0.8rem;
+        }
+        .header-controls {
+          justify-content: center;
+        }
+        .header-controls select,
+        .header-controls button {
+          font-size: 0.65rem;
+          padding: 3px 8px;
+        }
+        .sentence-jp {
+          font-size: 1.4rem;
+          line-height: 2.2;
+        }
+        .sentence-jp ruby rt {
+          font-size: 0.55rem;
+        }
+        .sentence-jp .blank-slot {
+          min-width: 55px;
+          min-height: 36px;
+          font-size: 1.3rem;
+          padding: 0 6px 2px 6px;
+        }
+        .sentence-jp .blank-slot .placed-word {
+          font-size: 1.3rem;
+        }
+        .sentence-jp .blank-slot .placed-word ruby rt {
+          font-size: 0.5rem;
+        }
+        .sentence-jp .blank-slot .blank-number {
+          font-size: 0.6rem;
+        }
+        .word-bank .bank-word {
+          font-size: 1.15rem;
+          padding: 6px 14px;
+          min-width: 46px;
+        }
+        .word-bank .bank-word ruby rt {
+          font-size: 0.5rem;
+        }
+        .action-btn {
+          padding: 8px 16px;
+          font-size: 0.8rem;
+        }
+        .progress-stats {
+          font-size: 0.7rem;
+          gap: 6px 12px;
+        }
+        .completion-overlay h2 {
+          font-size: 1.4rem;
+        }
+        .feedback-area {
+          font-size: 0.85rem;
+          padding: 12px 14px;
+        }
+        .sentence-area {
+          padding: 14px 14px 12px;
+        }
+        .word-bank-area {
+          padding: 12px 14px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .app-container {
+          padding: 8px 6px 12px;
+          border-radius: 12px;
+        }
+        .sentence-jp {
+          font-size: 1.1rem;
+          line-height: 1.8;
+        }
+        .sentence-jp ruby rt {
+          font-size: 0.45rem;
+        }
+        .sentence-jp .blank-slot {
+          min-width: 44px;
+          min-height: 30px;
+          font-size: 1rem;
+          padding: 0 4px 2px 4px;
+          border-bottom-width: 2px;
+        }
+        .sentence-jp .blank-slot .placed-word {
+          font-size: 1rem;
+        }
+        .sentence-jp .blank-slot .placed-word ruby rt {
+          font-size: 0.4rem;
+        }
+        .sentence-jp .blank-slot .blank-number {
+          font-size: 0.5rem;
+        }
+        .word-bank .bank-word {
+          font-size: 0.95rem;
+          padding: 4px 12px;
+          border-width: 1.5px;
+          min-width: 38px;
+        }
+        .word-bank .bank-word ruby rt {
+          font-size: 0.4rem;
+        }
+        .word-bank .bank-word .word-tts-btn {
+          font-size: 0.6rem;
+          padding-left: 4px;
+        }
+        .action-btn {
+          padding: 6px 12px;
+          font-size: 0.7rem;
+          border-radius: 30px;
+        }
+        .header-controls {
+          gap: 4px 6px;
+        }
+        .header-controls select,
+        .header-controls button {
+          font-size: 0.6rem;
+          padding: 2px 6px;
+        }
+        .progress-stats {
+          font-size: 0.6rem;
+          gap: 4px 8px;
+        }
+        .feedback-area {
+          font-size: 0.75rem;
+          padding: 10px 12px;
+        }
+        .completion-overlay {
+          padding: 18px 14px;
+        }
+        .completion-overlay h2 {
+          font-size: 1.2rem;
+        }
+        .completion-overlay .completion-stats {
+          font-size: 0.85rem;
+        }
+        .sentence-area {
+          padding: 10px 8px 10px;
+        }
+        .word-bank-area {
+          padding: 8px 10px;
+        }
+      }
+
+      /* ============================================================
+           UTILITY
+           ============================================================ */
+      .hidden {
+        display: none !important;
+      }
+      .text-center {
+        text-align: center;
+      }
+      .mt-8 {
+        margin-top: 8px;
+      }
+      .mb-8 {
+        margin-bottom: 8px;
+      }
+
+      /* ============================================================
+           LOADING / EMPTY STATE
+           ============================================================ */
+      .empty-state {
+        color: #b8a58b;
+        font-size: 0.9rem;
+        text-align: center;
+        padding: 20px 0;
+      }
+
+      .empty-state .empty-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container" id="app">
+      <!-- ========== HEADER ========== -->
+      <div class="app-header">
+        <h1>🧩 N5 Sentence Builder <span>— Master the sentences!</span></h1>
+        <div class="header-controls">
+          <label for="sprintSelect">Sprint:</label>
+          <select id="sprintSelect">
+            <option value="">Loading...</option>
+          </select>
+
+          <button id="furiganaToggle" class="toggle-btn active">🔤 ON</button>
+
+          <span style="font-size: 0.65rem; color: #7a6f60">Speed:</span>
+          <button class="speed-btn" data-speed="0.75">0.75x</button>
+          <button class="speed-btn active" data-speed="1.0">1.0x</button>
+          <button class="speed-btn" data-speed="1.25">1.25x</button>
+        </div>
+      </div>
+
+      <!-- ========== PROGRESS ========== -->
+      <div class="progress-section">
+        <div class="progress-stats">
+          <span class="stat-item correct"
+            >✅ <span class="stat-value" id="correctCount">0</span>
+            <span class="stat-label">correct</span></span
+          >
+          <span class="stat-item incorrect"
+            >❌ <span class="stat-value" id="incorrectCount">0</span>
+            <span class="stat-label">incorrect</span></span
+          >
+          <span class="stat-item"
+            >📝 <span class="stat-value" id="attemptsCount">0</span>
+            <span class="stat-label">attempts</span></span
+          >
+          <span class="stat-item"
+            >🔄 <span class="stat-value" id="cycleCount">0</span>
+            <span class="stat-label">cycle</span></span
+          >
+          <span class="stat-item"
+            >📊 <span class="stat-value" id="masteredCount">0</span>
+            <span class="stat-label">mastered</span></span
+          >
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+        <div class="progress-label">
+          <span id="progressText">0 / 0 mastered</span>
+          <span id="progressPercent">0%</span>
+        </div>
+      </div>
+
+      <!-- ========== SENTENCE AREA ========== -->
+      <div class="sentence-area" id="sentenceArea">
+        <div class="translation-toggle">
+          <button id="translationToggleBtn">📖 Show Translation</button>
+        </div>
+        <div class="sentence-jp" id="sentenceJp">
+          <span class="empty-state">
+            <span class="empty-icon">📚</span>
+            Select a sprint to begin building sentences!
+          </span>
+        </div>
+        <div class="sentence-en" id="sentenceEn"></div>
+        <div class="sentence-controls">
+          <button class="action-btn sentence-tts" id="sentenceTtsBtn" disabled>
+            🔊 Play Sentence
+          </button>
+          <span class="sentence-hint" id="sentenceHint"></span>
+        </div>
+      </div>
+
+      <!-- ========== WORD BANK ========== -->
+      <div class="word-bank-area" id="wordBankArea">
+        <div class="word-bank-label">
+          <span>📦 Word Bank</span>
+          <span class="bank-count" id="bankCount">0 words</span>
+        </div>
+        <div class="word-bank" id="wordBank">
+          <span class="empty-bank-message"
+            >Select a sentence to see the word bank...</span
+          >
+        </div>
+      </div>
+
+      <!-- ========== CONTROLS ========== -->
+      <div class="action-controls">
+        <button class="action-btn primary" id="submitBtn" disabled>
+          ✅ Submit
+        </button>
+        <button class="action-btn danger" id="resetBtn">⟳ Reset Sprint</button>
+      </div>
+
+      <!-- ========== FEEDBACK ========== -->
+      <div class="feedback-area" id="feedbackArea">
+        <div class="feedback-title" id="feedbackTitle"></div>
+        <div class="feedback-detail" id="feedbackDetail"></div>
+      </div>
+
+      <!-- ========== COMPLETION OVERLAY ========== -->
+      <div class="completion-overlay" id="completionOverlay">
+        <h2>🎉 Sprint Complete!</h2>
+        <div class="completion-stats" id="completionStats">
+          <p>You've mastered all sentences in this sprint!</p>
+          <p>
+            ✅ Correct: <span class="highlight-num" id="compCorrect">0</span>
+          </p>
+          <p>
+            ❌ Incorrect:
+            <span class="highlight-num" id="compIncorrect">0</span>
+          </p>
+          <p>
+            📝 Total attempts:
+            <span class="highlight-num" id="compAttempts">0</span>
+          </p>
+          <p>🔄 Cycles: <span class="highlight-num" id="compCycles">0</span></p>
+        </div>
+        <div class="completion-actions">
+          <button class="action-btn primary" id="compResetBtn">
+            ⟳ Reset Sprint
+          </button>
+          <button class="action-btn secondary" id="compNextSprintBtn">
+            ➡️ Next Sprint
+          </button>
+        </div>
+      </div>
+
+      <!-- ========== HINT TEXT ========== -->
+      <div
+        style="
+          text-align: center;
+          font-size: 0.75rem;
+          color: #8a7a6a;
+          margin-top: 8px;
+          border-top: 1px solid #f0ebe3;
+          padding-top: 12px;
+        "
+      >
+        💡 Click a word in the bank, then click a blank slot to place it. Click
+        a placed word to remove it.
+      </div>
+    </div>
+
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
+
+    <!-- 1. DATA - These are copied from n5-study-app, UNCHANGED -->
+    <script src="js/data/sentences.js"></script>
+    <script src="js/data/wordDict.js"></script>
+
+    <!-- 2. UTILITIES - These are copied from n5-study-app, UNCHANGED -->
+    <script src="js/utils/furigana.js"></script>
+    <script src="js/utils/tooltips.js"></script>
+
+    <!-- 3. MODULES - NEW for sentence builder -->
+    <script src="js/modules/audio.js"></script>
+    <script src="js/modules/sentenceBuilder.js"></script>
+
+    <!-- 4. INIT -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("📚 N5 Sentence Builder starting...");
+        console.log(
+          "📖 sentencesData count:",
+          typeof sentencesData !== "undefined"
+            ? sentencesData.length
+            : "undefined",
+        );
+        console.log(
+          "📚 wordDict keys:",
+          typeof wordDict !== "undefined"
+            ? Object.keys(wordDict).length
+            : "undefined",
+        );
+
+        setTimeout(function () {
+          if (typeof SentenceBuilder !== "undefined") {
+            try {
+              const builder = new SentenceBuilder();
+              builder.init();
+              window.builder = builder;
+              console.log("✅ Sentence Builder initialized successfully!");
+            } catch (e) {
+              console.error("❌ Error initializing SentenceBuilder:", e);
+            }
+          } else {
+            console.error(
+              "❌ SentenceBuilder class not found. Check that sentenceBuilder.js loaded correctly.",
+            );
+          }
+        }, 300);
+      });
+    </script>
+
+    <!-- ============================================================
+    SERVICE WORKER REGISTRATION
+    ============================================================ -->
+    <script>
+      // Register Service Worker for PWA offline support
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('✅ Service Worker registered with scope:', registration.scope);
+            })
+            .catch((error) => {
+              console.log('❌ Service Worker registration failed:', error);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>
