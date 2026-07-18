@@ -7,14 +7,17 @@
       content="width=device-width, initial-scale=1.0, user-scalable=yes"
     />
     <title>N5 Sentence Builder</title>
-    
+
     <!-- ===== PWA META TAGS ===== -->
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#1a73e8" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
-    
+
     <style>
       /* ============================================================
            GLOBAL RESET & BASE
@@ -974,18 +977,25 @@
     </script>
 
     <!-- ============================================================
-    SERVICE WORKER REGISTRATION
-    ============================================================ -->
+SERVICE WORKER REGISTRATION - FIXED FOR GITHUB PAGES
+============================================================ -->
     <script>
       // Register Service Worker for PWA offline support
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          // ✅ Use the full path for GitHub Pages
+          const swPath = "/n5-sentence-builder/sw.js";
+
+          navigator.serviceWorker
+            .register(swPath)
             .then((registration) => {
-              console.log('✅ Service Worker registered with scope:', registration.scope);
+              console.log(
+                "✅ Service Worker registered with scope:",
+                registration.scope,
+              );
             })
             .catch((error) => {
-              console.log('❌ Service Worker registration failed:', error);
+              console.log("❌ Service Worker registration failed:", error);
             });
         });
       }
