@@ -7,8 +7,6 @@
       content="width=device-width, initial-scale=1.0, user-scalable=yes"
     />
     <title>N5 Sentence Builder</title>
-
-    <!-- ===== PWA META TAGS ===== -->
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#1a73e8" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -20,58 +18,67 @@
 
     <style>
       /* ============================================================
-           GLOBAL RESET & BASE
-           ============================================================ */
+         RESET - removes default browser margins/padding
+         ============================================================ */
       * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
       }
 
+      /* ============================================================
+         BODY - main page background and text
+         ============================================================ */
       body {
         font-family:
           "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
-        background: #f5f0eb;
-        color: #1a1a1a;
+        background: #a7e7fa; /* CHANGE: Page background color */
+        color: #080808; /* CHANGE: Default text color on page */
         min-height: 100vh;
         padding: 16px;
       }
 
+      /* ============================================================
+         APP CONTAINER - white card that holds everything
+         ============================================================ */
       .app-container {
         max-width: 1000px;
         margin: 0 auto;
-        background: #ffffff;
-        border-radius: 20px;
+        background: #ffffff; /* CHANGE: Main card background color */
+        border-radius: 20px; /* CHANGE: Roundness of corners */
         padding: 24px 28px 32px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* CHANGE: Shadow around card */
       }
 
       /* ============================================================
-           HEADER
-           ============================================================ */
+         HEADER - title bar area
+         ============================================================ */
       .app-header {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 2px solid #e8e0d6;
+        border-bottom: 2px solid #031bf8; /* CHANGE: Line color below header */
         padding-bottom: 14px;
         margin-bottom: 18px;
         gap: 10px;
       }
 
       .app-header h1 {
-        font-size: 1.4rem;
-        font-weight: 600;
-        color: #2c241c;
+        font-size: 1.6rem; /* CHANGE: Main title size */
+        font-weight: 600; /* CHANGE: Main title weight (boldness) */
+        color: #030303; /* CHANGE: Main title color */
         letter-spacing: -0.3px;
       }
       .app-header h1 span {
-        font-weight: 300;
-        color: #8a7a6a;
-        font-size: 0.9rem;
+        font-weight: 300; /* CHANGE: Subtitle weight */
+        color: #1a1714; /* CHANGE: Subtitle color (e.g. "— Master the sentences!") */
+        font-size: 1rem; /* CHANGE: Subtitle size */
       }
 
+      /* ============================================================
+         HEADER CONTROLS - sprint selector, toggle buttons, mode buttons
+         ============================================================ */
       .header-controls {
         display: flex;
         flex-wrap: wrap;
@@ -80,18 +87,18 @@
       }
 
       .header-controls label {
-        font-size: 0.75rem;
-        font-weight: 500;
-        color: #5a4e3e;
+        font-size: 0.9rem; /* CHANGE: Label text size (e.g. "Sprint:") */
+        font-weight: 500; /* CHANGE: Label weight */
+        color: #070604; /* CHANGE: Label color */
       }
 
       .header-controls select,
       .header-controls button {
-        font-size: 0.75rem;
+        font-size: 0.8rem; /* CHANGE: Controls text size */
         padding: 4px 12px;
-        border-radius: 30px;
-        border: 1px solid #d4c9b8;
-        background: #faf8f5;
+        border-radius: 30px; /* CHANGE: Roundness of controls */
+        border: 1px solid #d4c9b8; /* CHANGE: Border color of controls */
+        background: #ffffff; /* CHANGE: Background of controls */
         cursor: pointer;
         font-family: inherit;
         transition: 0.15s;
@@ -99,40 +106,81 @@
 
       .header-controls select:hover,
       .header-controls button:hover {
-        background: #f0ebe3;
+        background: #f0ebe3; /* CHANGE: Hover background of controls */
       }
 
+      /* Toggle buttons (Furigana ON/OFF) */
       .header-controls .toggle-btn {
-        background: #e8e0d6;
-        border-color: #c8bcaa;
+        background: #ffffff; /* CHANGE: Toggle button background */
+        border-color: #fc0202; /* CHANGE: Toggle button border */
         font-weight: 500;
         min-width: 60px;
         text-align: center;
       }
       .header-controls .toggle-btn.active {
-        background: #b8a58b;
-        border-color: #9e8a72;
-        color: white;
+        background: #72f78f; /* CHANGE: Active toggle background */
+        border-color: #00f700; /* CHANGE: Active toggle border */
+        color: rgb(2, 2, 2); /* CHANGE: Active toggle text color */
       }
 
+      /* Speed buttons (0.75x, 1.0x, 1.25x) */
       .header-controls .speed-btn {
-        background: #f0ebe3;
-        border-color: #d4c9b8;
+        background: #ffffff; /* CHANGE: Speed button background */
+        border-color: #d4c9b8; /* CHANGE: Speed button border */
         padding: 4px 10px;
-        font-size: 0.65rem;
-        font-weight: 600;
+        font-size: 0.7rem; /* CHANGE: Speed button text size */
+        font-weight: 600; /* CHANGE: Speed button weight */
         min-width: 40px;
         text-align: center;
       }
       .header-controls .speed-btn.active {
-        background: #8a7a6a;
-        border-color: #6b5f4e;
-        color: white;
+        background: #72f78f; /* CHANGE: Active speed button background */
+        border-color: #00f700; /* CHANGE: Active speed button border */
+        color: rgb(2, 2, 2); /* CHANGE: Active speed button text color */
       }
 
       /* ============================================================
-           PROGRESS SECTION
-           ============================================================ */
+         MODE TOGGLE - Fill, Order, Select buttons
+         ============================================================ */
+      .mode-toggle {
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+        margin-left: 4px;
+      }
+
+      .mode-toggle .mode-label {
+        font-size: 0.65rem; /* CHANGE: "Mode:" label size */
+        color: #070707; /* CHANGE: "Mode:" label color */
+        margin-right: 2px;
+      }
+
+      .mode-btn {
+        font-size: 0.65rem; /* CHANGE: Mode button text size */
+        padding: 3px 10px;
+        border-radius: 30px; /* CHANGE: Mode button roundness */
+        border: 1px solid #d4c9b8; /* CHANGE: Mode button border color */
+        background: #ffffff; /* CHANGE: Mode button background */
+        color: #000000; /* CHANGE: Mode button text color */
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s ease;
+        font-weight: 500;
+      }
+
+      .mode-btn.active {
+        background: #5a8a6a; /* CHANGE: Active mode button background */
+        color: white; /* CHANGE: Active mode button text color */
+        border-color: #4a7a5a; /* CHANGE: Active mode button border */
+      }
+
+      .mode-btn:not(.active):hover {
+        background: #f0ebe3; /* CHANGE: Hover background for inactive mode buttons */
+      }
+
+      /* ============================================================
+         PROGRESS SECTION - stats and progress bar
+         ============================================================ */
       .progress-section {
         margin-bottom: 16px;
       }
@@ -141,178 +189,394 @@
         display: flex;
         flex-wrap: wrap;
         gap: 10px 20px;
-        font-size: 0.8rem;
-        color: #3d352b;
+        font-size: 0.8rem; /* CHANGE: Stats text size */
+        color: #3d352b; /* CHANGE: Stats text color */
         margin-bottom: 6px;
       }
+
       .progress-stats .stat-item {
         display: flex;
         align-items: center;
         gap: 3px;
       }
+
       .progress-stats .stat-item .stat-value {
-        font-weight: 600;
-        color: #1a1a1a;
-      }
-      .progress-stats .stat-item .stat-label {
-        color: #7a6f60;
-      }
-      .progress-stats .stat-item.correct .stat-value {
-        color: #2d7a4a;
-      }
-      .progress-stats .stat-item.incorrect .stat-value {
-        color: #b34a4a;
+        font-weight: 600; /* CHANGE: Stat number weight */
+        color: #1a1a1a; /* CHANGE: Stat number color */
       }
 
+      .progress-stats .stat-item .stat-label {
+        color: #7a6f60; /* CHANGE: Stat label color (e.g. "correct", "attempts") */
+      }
+
+      .progress-stats .stat-item.correct .stat-value {
+        color: #2d7a4a; /* CHANGE: "Correct" stat number color (green) */
+      }
+
+      .progress-stats .stat-item.incorrect .stat-value {
+        color: #b34a4a; /* CHANGE: "Incorrect" stat number color (red) */
+      }
+
+      /* Progress bar track */
       .progress-bar-container {
         width: 100%;
-        height: 8px;
-        background: #e8e0d6;
-        border-radius: 20px;
+        height: 8px; /* CHANGE: Progress bar height */
+        background: #e8e0d6; /* CHANGE: Progress bar track color */
+        border-radius: 20px; /* CHANGE: Progress bar roundness */
         overflow: hidden;
       }
+
+      /* Progress bar fill */
       .progress-bar {
         height: 100%;
-        background: #5a8a6a;
-        border-radius: 20px;
+        background: #5a8a6a; /* CHANGE: Progress bar fill color */
+        border-radius: 20px; /* CHANGE: Progress bar fill roundness */
         transition: width 0.5s ease;
         width: 0%;
       }
+
       .progress-label {
         display: flex;
         justify-content: space-between;
-        font-size: 0.7rem;
-        color: #7a6f60;
+        font-size: 0.7rem; /* CHANGE: Progress label text size */
+        color: #7a6f60; /* CHANGE: Progress label text color */
         margin-top: 4px;
       }
 
       /* ============================================================
-           SENTENCE AREA - Dark Black Text, White Background, Larger Fonts
-           ============================================================ */
+         SENTENCE AREA - where the sentence is displayed
+         ============================================================ */
       .sentence-area {
-        background: #ffffff;
-        border: 2px solid #e8e0d6;
-        border-radius: 16px;
+        background: #ffffff; /* CHANGE: Sentence area background */
+        border: 2px solid #e8e0d6; /* CHANGE: Sentence area border color */
+        border-radius: 16px; /* CHANGE: Sentence area roundness */
         padding: 20px 24px 18px;
         margin-bottom: 14px;
         min-height: 140px;
       }
 
+      /* Translation toggle button container */
       .sentence-area .translation-toggle {
         display: flex;
         justify-content: flex-end;
         margin-bottom: 8px;
       }
+
+      /* Translation toggle button */
       .sentence-area .translation-toggle button {
         background: none;
-        border: 1px solid #d4c9b8;
-        border-radius: 30px;
+        border: 1px solid #d4c9b8; /* CHANGE: Translation button border */
+        border-radius: 30px; /* CHANGE: Translation button roundness */
         padding: 3px 14px;
-        font-size: 0.7rem;
-        color: #5a4e3e;
+        font-size: 0.9rem; /* CHANGE: Translation button text size */
+        color: #5a4e3e; /* CHANGE: Translation button text color */
         cursor: pointer;
         font-family: inherit;
         transition: 0.15s;
       }
+
       .sentence-area .translation-toggle button:hover {
-        background: #f0ebe3;
-      }
-      .sentence-area .translation-toggle button.active {
-        background: #b8a58b;
-        border-color: #9e8a72;
-        color: white;
+        background: #f0ebe3; /* CHANGE: Translation button hover background */
       }
 
+      .sentence-area .translation-toggle button.active {
+        background: #b8a58b; /* CHANGE: Active translation button background */
+        border-color: #9e8a72; /* CHANGE: Active translation button border */
+        color: white; /* CHANGE: Active translation button text color */
+      }
+
+      /* ============================================================
+         SENTENCE JP - the Japanese sentence display
+         ============================================================ */
       .sentence-jp {
-        font-size: 1.9rem;
-        line-height: 2.6;
-        color: #000000;
+        font-size: 1.9rem; /* CHANGE: Japanese sentence text size */
+        line-height: 2.6; /* CHANGE: Line height for Japanese text */
+        color: #000000; /* CHANGE: Japanese sentence text color */
         padding: 8px 4px;
         word-break: break-word;
         font-family:
           "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
         min-height: 70px;
-        background: #ffffff;
+        background: #ffffff; /* CHANGE: Japanese text background */
       }
 
+      /* Ruby (furigana) styling */
       .sentence-jp ruby {
         ruby-align: center;
       }
+
+      /* Furigana text (small text above kanji) */
       .sentence-jp ruby rt {
-        color: #8b0000;
-        font-size: 1rem;
-        font-weight: 300;
+        color: #8b0000; /* CHANGE: Furigana text color (dark red) */
+        font-size: 1rem; /* CHANGE: Furigana text size */
+        font-weight: 300; /* CHANGE: Furigana text weight */
         letter-spacing: 0.3px;
       }
 
+      /* ============================================================
+         FILL MODE - blank slot styles
+         ============================================================ */
       .sentence-jp .blank-slot {
         display: inline-block;
-        min-width: 70px;
-        border-bottom: 3px dashed #8a7a6a;
+        min-width: 70px; /* CHANGE: Minimum width of blank slot */
+        border-bottom: 3px dashed #8a7a6a; /* CHANGE: Blank slot underline color and style */
         margin: 0 2px;
         padding: 0 8px 2px 8px;
         text-align: center;
         cursor: pointer;
         transition: 0.15s;
-        background: #cdee99;
+        background: #cdee99; /* CHANGE: Blank slot background (light green) */
         border-radius: 0 0 4px 4px;
-        min-height: 55px;
+        min-height: 55px; /* CHANGE: Minimum height of blank slot */
         vertical-align: bottom;
-        font-size: 1.9rem;
-        color: #000000;
+        font-size: 1.9rem; /* CHANGE: Text size inside blank slot */
+        color: #000000; /* CHANGE: Text color inside blank slot */
         position: relative;
       }
+
       .sentence-jp .blank-slot.highlight {
-        background: #f5e3c4;
-        border-bottom-color: #b8a58b;
+        background: #f5e3c4; /* CHANGE: Highlight background when hovering with selected word */
+        border-bottom-color: #b8a58b; /* CHANGE: Highlight border color */
       }
+
       .sentence-jp .blank-slot.filled {
         border-bottom-style: solid;
-        border-bottom-color: #5a8a6a;
-        background: #eaf5ea;
+        border-bottom-color: #5a8a6a; /* CHANGE: Filled slot border color (green) */
+        background: #eaf5ea; /* CHANGE: Filled slot background */
       }
+
       .sentence-jp .blank-slot.correct {
-        border-bottom-color: #2d7a4a;
-        background: #d4e8d4;
+        border-bottom-color: #2d7a4a; /* CHANGE: Correct slot border color */
+        background: #d4e8d4; /* CHANGE: Correct slot background */
       }
+
       .sentence-jp .blank-slot.incorrect {
-        border-bottom-color: #b34a4a;
-        background: #f8d4d4;
+        border-bottom-color: #b34a4a; /* CHANGE: Incorrect slot border color */
+        background: #f8d4d4; /* CHANGE: Incorrect slot background */
       }
 
       .sentence-jp .blank-slot .placed-word {
         display: inline-block;
-        font-size: 1.9rem;
-        color: #000000;
+        font-size: 1.9rem; /* CHANGE: Size of placed word inside slot */
+        color: #000000; /* CHANGE: Color of placed word */
         cursor: pointer;
       }
+
       .sentence-jp .blank-slot .placed-word ruby {
         ruby-align: center;
       }
+
       .sentence-jp .blank-slot .placed-word ruby rt {
-        color: #8b0000;
-        font-size: 1rem;
+        color: #8b0000; /* CHANGE: Furigana color for placed words */
+        font-size: 1rem; /* CHANGE: Furigana size for placed words */
       }
+
       .sentence-jp .blank-slot .blank-number {
-        font-size: 0.7rem;
-        color: #b8a58b;
+        font-size: 0.7rem; /* CHANGE: Blank number size (e.g. "1", "2") */
+        color: #b8a58b; /* CHANGE: Blank number color */
         display: block;
         margin-top: -4px;
       }
 
+      /* ============================================================
+         ORDER MODE - slot styles for ordering words
+         ============================================================ */
+      .order-sentence-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        padding: 8px 0;
+        min-height: 80px;
+        align-items: center;
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .order-sentence-container .order-instruction {
+        color: #b8a58b; /* CHANGE: Instruction text color */
+        font-size: 0.9rem; /* CHANGE: Instruction text size */
+        font-style: italic;
+        padding: 8px 0;
+        text-align: center;
+        width: 100%;
+      }
+
+      .order-sentence-container .order-slots-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+      }
+
+      /* Individual order slot */
+      .order-slot {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 20px;
+        background: #ffffff; /* CHANGE: Order slot background */
+        border: 2px solid #d4c9b8; /* CHANGE: Order slot border color */
+        border-radius: 30px; /* CHANGE: Order slot roundness */
+        font-size: 1.9rem; /* CHANGE: Order slot text size */
+        color: #000000; /* CHANGE: Order slot text color */
+        cursor: pointer;
+        transition: 0.15s;
+        user-select: none;
+        font-family:
+          "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+        min-width: 55px; /* CHANGE: Minimum width of order slot */
+        gap: 0 6px;
+        position: relative;
+        white-space: nowrap;
+        flex-shrink: 0;
+        box-sizing: border-box;
+        min-height: auto;
+        width: auto;
+        max-width: none;
+        overflow: visible;
+        word-break: keep-all;
+        line-height: 1.8;
+        text-align: center;
+        vertical-align: middle;
+        ruby-align: center;
+      }
+
+      .order-slot:hover {
+        background: #f0ebe3; /* CHANGE: Order slot hover background */
+        border-color: #b8a58b; /* CHANGE: Order slot hover border */
+        transform: scale(1.02);
+      }
+
+      .order-slot:active {
+        transform: scale(0.95);
+      }
+
+      .order-slot ruby {
+        ruby-align: center;
+        display: inline;
+        line-height: 1.8;
+        vertical-align: middle;
+        ruby-position: over;
+        text-align: center;
+      }
+
+      .order-slot ruby rt {
+        color: #8b0000; /* CHANGE: Furigana color in order slots */
+        font-size: 0.9rem; /* CHANGE: Furigana size in order slots */
+        font-weight: 300;
+        display: ruby-text;
+        line-height: 1.2;
+        text-align: center;
+        letter-spacing: 0.5px;
+        ruby-position: over;
+      }
+
+      .order-slot .order-number {
+        font-size: 0.55rem; /* CHANGE: Position number size (1, 2, 3...) */
+        color: #030200; /* CHANGE: Position number color */
+        line-height: 1.2;
+        font-weight: 600;
+        margin-left: 4px;
+      }
+
+      .order-slot .slot-placeholder {
+        font-size: 1rem; /* CHANGE: Placeholder icon size (⬜) */
+        color: #d4c9b8; /* CHANGE: Placeholder icon color */
+        line-height: 1;
+      }
+
+      /* Empty slot */
+      .order-slot.empty {
+        background: #f5f0eb; /* CHANGE: Empty slot background */
+        border-style: dashed;
+        border-color: #c8bcaa; /* CHANGE: Empty slot border color */
+        min-width: 50px;
+        min-height: 50px;
+        padding: 8px 14px;
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        line-height: 1.4;
+        text-align: center;
+      }
+
+      .order-slot.empty:hover {
+        background: #f0ebe3; /* CHANGE: Empty slot hover background */
+        border-color: #b8a58b; /* CHANGE: Empty slot hover border */
+        transform: scale(1.02);
+      }
+
+      /* Filled slot */
+      .order-slot.filled {
+        background: #eaf5ea; /* CHANGE: Filled slot background */
+        border-color: #5a8a6a; /* CHANGE: Filled slot border color */
+        border-style: solid;
+      }
+
+      .order-slot.filled:hover {
+        background: #d4e8d4; /* CHANGE: Filled slot hover background */
+        transform: scale(1.02);
+      }
+
+      .order-slot.filled.correct {
+        background: #c8e0c8; /* CHANGE: Correct slot background */
+        border-color: #2d7a4a; /* CHANGE: Correct slot border color */
+      }
+
+      .order-slot.filled.incorrect {
+        background: #f8d4d4; /* CHANGE: Incorrect slot background */
+        border-color: #b34a4a; /* CHANGE: Incorrect slot border color */
+      }
+
+      /* ============================================================
+         SELECT MODE - instruction text for select-order mode
+         ============================================================ */
+      .select-mode-instruction {
+        font-size: 0.85rem; /* CHANGE: Instruction text size */
+        color: #7a6f60; /* CHANGE: Instruction text color */
+        margin-bottom: 8px;
+        text-align: center;
+        padding: 4px 8px;
+        background: #faf8f5; /* CHANGE: Instruction background */
+        border-radius: 8px;
+        border: 1px solid #e8e0d6; /* CHANGE: Instruction border color */
+        width: 100%;
+      }
+
+      .select-mode-instruction .highlight-count {
+        font-weight: 700;
+        color: #2d7a4a; /* CHANGE: Highlighted count color (green) */
+      }
+
+      .select-mode-instruction .distractor-warning {
+        color: #b38a4a; /* CHANGE: Distractor warning text color (gold) */
+        font-weight: 500;
+      }
+
+      /* ============================================================
+         SENTENCE ENGLISH TRANSLATION
+         ============================================================ */
       .sentence-en {
-        font-size: 0.95rem;
-        color: #5a4e3e;
+        font-size: 0.95rem; /* CHANGE: Translation text size */
+        color: #5a4e3e; /* CHANGE: Translation text color */
         padding: 10px 4px 4px 4px;
-        border-top: 1px dashed #e0d8ce;
+        border-top: 1px dashed #e0d8ce; /* CHANGE: Translation separator line color */
         margin-top: 10px;
         display: none;
         font-style: italic;
       }
+
       .sentence-en.visible {
         display: block;
       }
 
+      /* ============================================================
+         SENTENCE CONTROLS - Play button and hint
+         ============================================================ */
       .sentence-controls {
         display: flex;
         flex-wrap: wrap;
@@ -322,116 +586,156 @@
       }
 
       .sentence-controls .sentence-hint {
-        font-size: 0.75rem;
-        color: #8a7a6a;
+        font-size: 0.75rem; /* CHANGE: Hint text size */
+        color: #8a7a6a; /* CHANGE: Hint text color */
         font-style: italic;
       }
 
       /* ============================================================
-           WORD BANK - Dark Black Text, White Background, Larger Fonts
-           ============================================================ */
+         WORD BANK AREA
+         ============================================================ */
       .word-bank-area {
-        background: #faf8f5;
-        border: 2px solid #e8e0d6;
-        border-radius: 16px;
+        background: #faf8f5; /* CHANGE: Word bank area background */
+        border: 2px solid #e8e0d6; /* CHANGE: Word bank border color */
+        border-radius: 16px; /* CHANGE: Word bank roundness */
         padding: 16px 20px;
         margin-bottom: 14px;
         min-height: 80px;
       }
 
       .word-bank-label {
-        font-size: 0.8rem;
-        color: #7a6f60;
+        font-size: 0.8rem; /* CHANGE: "Word Bank" label size */
+        color: #7a6f60; /* CHANGE: "Word Bank" label color */
         margin-bottom: 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-      }
-      .word-bank-label .bank-count {
-        font-weight: 500;
-        color: #3d352b;
+        flex-wrap: wrap;
+        gap: 6px;
       }
 
+      .word-bank-label .bank-count {
+        font-weight: 500;
+        color: #3d352b; /* CHANGE: Word count color */
+      }
+
+      /* ============================================================
+         WORD BANK - individual word tiles
+         ============================================================ */
       .word-bank {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 14px;
         min-height: 50px;
         align-items: center;
+        padding: 4px 0;
       }
 
       .word-bank .bank-word {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 8px 20px;
-        background: #ffffff;
-        border: 2px solid #d4c9b8;
-        border-radius: 30px;
-        font-size: 1.4rem;
-        color: #000000;
+        padding: 10px 24px !important;
+        background: #ffffff !important; /* CHANGE: Word tile background */
+        border: 2.5px solid #d4c9b8 !important; /* CHANGE: Word tile border color */
+        border-radius: 30px; /* CHANGE: Word tile roundness */
+        font-size: 1.8rem !important; /* CHANGE: Word tile text size */
+        color: #000000 !important; /* CHANGE: Word tile text color */
         cursor: pointer;
         transition: 0.15s;
         user-select: none;
         font-family:
           "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
-        min-width: 55px;
+        min-width: 60px; /* CHANGE: Minimum width of word tile */
         gap: 0 6px;
         position: relative;
+        white-space: nowrap;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* CHANGE: Word tile shadow */
       }
+
       .word-bank .bank-word:hover {
-        background: #f0ebe3;
-        border-color: #b8a58b;
-        transform: scale(1.02);
+        background: #f5f0eb !important; /* CHANGE: Word tile hover background */
+        border-color: #b8a58b !important; /* CHANGE: Word tile hover border */
+        transform: scale(1.03);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* CHANGE: Word tile hover shadow */
       }
+
       .word-bank .bank-word:active {
         transform: scale(0.95);
       }
+
       .word-bank .bank-word.selected {
-        background: #f5e3c4;
-        border-color: #b8a58b;
-        box-shadow: 0 0 0 3px rgba(184, 165, 139, 0.25);
+        background: #f5e3c4 !important; /* CHANGE: Selected word tile background */
+        border-color: #b8a58b !important; /* CHANGE: Selected word tile border */
+        box-shadow: 0 0 0 3px rgba(184, 165, 139, 0.3); /* CHANGE: Selected word tile outline */
       }
+
       .word-bank .bank-word.used {
-        opacity: 0.25;
+        opacity: 0.25; /* CHANGE: Used word opacity (faded) */
         pointer-events: none;
         cursor: default;
         transform: none;
+        box-shadow: none;
       }
+
       .word-bank .bank-word ruby {
         ruby-align: center;
       }
+
       .word-bank .bank-word ruby rt {
-        color: #8b0000;
-        font-size: 0.6rem;
+        color: #8b0000 !important; /* CHANGE: Furigana color in word bank */
+        font-size: 1rem !important; /* CHANGE: Furigana size in word bank */
         font-weight: 300;
       }
+
       .word-bank .bank-word .word-tts-btn {
         background: none;
         border: none;
-        font-size: 0.7rem;
+        font-size: 0.75rem; /* CHANGE: TTS button size */
         cursor: pointer;
-        color: #5a7a8a;
-        padding: 0 2px 0 8px;
+        color: #5a7a8a; /* CHANGE: TTS button color (blue-ish) */
+        padding: 0 2px 0 10px;
         transition: 0.15s;
         font-family: inherit;
         line-height: 1;
       }
+
       .word-bank .bank-word .word-tts-btn:hover {
-        color: #3a5a6a;
+        color: #3a5a6a; /* CHANGE: TTS button hover color */
         transform: scale(1.2);
       }
 
+      /* Distractor words (select mode) */
+      .word-bank .bank-word.distractor {
+        border-color: #d4a04a; /* CHANGE: Distractor word border color (gold) */
+        background: #fcf5e8; /* CHANGE: Distractor word background */
+      }
+
+      .word-bank .bank-word.distractor .distractor-badge {
+        font-size: 0.5rem; /* CHANGE: Distractor badge size */
+        color: #b34a4a; /* CHANGE: Distractor badge color */
+        margin-left: 4px;
+        background: #ffebee; /* CHANGE: Distractor badge background */
+        padding: 0 6px;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+
+      .word-bank .bank-word.distractor.used {
+        opacity: 0.3;
+        background: #f5ece0; /* CHANGE: Used distractor background */
+      }
+
       .word-bank .empty-bank-message {
-        color: #b8a58b;
-        font-size: 0.9rem;
+        color: #b8a58b; /* CHANGE: Empty bank message color */
+        font-size: 0.9rem; /* CHANGE: Empty bank message size */
         font-style: italic;
         padding: 8px 0;
       }
 
       /* ============================================================
-           ACTION CONTROLS
-           ============================================================ */
+         ACTION CONTROLS - Submit and Reset buttons
+         ============================================================ */
       .action-controls {
         display: flex;
         flex-wrap: wrap;
@@ -442,23 +746,26 @@
 
       .action-btn {
         padding: 10px 24px;
-        border-radius: 40px;
+        border-radius: 40px; /* CHANGE: Button roundness */
         border: none;
-        font-size: 0.9rem;
-        font-weight: 500;
+        font-size: 0.9rem; /* CHANGE: Button text size */
+        font-weight: 500; /* CHANGE: Button text weight */
         cursor: pointer;
         font-family: inherit;
         transition: 0.15s;
-        background: #e8e0d6;
-        color: #3d352b;
+        background: #e8e0d6; /* CHANGE: Default button background */
+        color: #3d352b; /* CHANGE: Default button text color */
       }
+
       .action-btn:hover:not(:disabled) {
         transform: scale(0.97);
-        background: #ddd4c8;
+        background: #ddd4c8; /* CHANGE: Default button hover background */
       }
+
       .action-btn:active:not(:disabled) {
         transform: scale(0.95);
       }
+
       .action-btn:disabled {
         opacity: 0.4;
         cursor: not-allowed;
@@ -466,119 +773,141 @@
       }
 
       .action-btn.primary {
-        background: #5a8a6a;
-        color: white;
+        background: #5a8a6a; /* CHANGE: Primary (Submit) button background */
+        color: white; /* CHANGE: Primary button text color */
       }
+
       .action-btn.primary:hover:not(:disabled) {
-        background: #4a7a5a;
+        background: #4a7a5a; /* CHANGE: Primary button hover background */
       }
 
       .action-btn.danger {
-        background: #b34a4a;
-        color: white;
+        background: #b34a4a; /* CHANGE: Danger (Reset) button background */
+        color: white; /* CHANGE: Danger button text color */
       }
+
       .action-btn.danger:hover:not(:disabled) {
-        background: #a33a3a;
+        background: #a33a3a; /* CHANGE: Danger button hover background */
       }
 
       .action-btn.secondary {
-        background: #8a7a6a;
-        color: white;
+        background: #8a7a6a; /* CHANGE: Secondary button background */
+        color: white; /* CHANGE: Secondary button text color */
       }
+
       .action-btn.secondary:hover:not(:disabled) {
-        background: #7a6a5a;
+        background: #7a6a5a; /* CHANGE: Secondary button hover background */
       }
 
       .action-btn.sentence-tts {
-        background: #4a7a8a;
-        color: white;
+        background: #4a7a8a; /* CHANGE: TTS button background (blue) */
+        color: white; /* CHANGE: TTS button text color */
       }
+
       .action-btn.sentence-tts:hover:not(:disabled) {
-        background: #3a6a7a;
+        background: #3a6a7a; /* CHANGE: TTS button hover background */
       }
 
       /* ============================================================
-           FEEDBACK AREA
-           ============================================================ */
+         FEEDBACK AREA - shows results after submission
+         ============================================================ */
       .feedback-area {
         padding: 16px 20px;
-        border-radius: 12px;
+        border-radius: 12px; /* CHANGE: Feedback roundness */
         margin-bottom: 12px;
         display: none;
-        font-size: 0.95rem;
+        font-size: 0.95rem; /* CHANGE: Feedback text size */
         line-height: 1.6;
       }
+
       .feedback-area.visible {
         display: block;
       }
+
       .feedback-area.success {
-        background: #eaf5ea;
-        border: 2px solid #5a8a6a;
-        color: #1a4a2a;
+        background: #eaf5ea; /* CHANGE: Success feedback background (light green) */
+        border: 2px solid #5a8a6a; /* CHANGE: Success feedback border color */
+        color: #1a4a2a; /* CHANGE: Success feedback text color */
       }
+
       .feedback-area.error {
-        background: #f8ecec;
-        border: 2px solid #b34a4a;
-        color: #5a2a2a;
+        background: #f8ecec; /* CHANGE: Error feedback background (light red) */
+        border: 2px solid #b34a4a; /* CHANGE: Error feedback border color */
+        color: #5a2a2a; /* CHANGE: Error feedback text color */
       }
+
       .feedback-area .feedback-title {
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 1rem; /* CHANGE: Feedback title size */
         margin-bottom: 4px;
       }
+
       .feedback-area .feedback-detail {
-        font-size: 0.9rem;
-        color: #3d352b;
+        font-size: 0.9rem; /* CHANGE: Feedback detail text size */
+        color: #3d352b; /* CHANGE: Feedback detail text color */
       }
+
       .feedback-area .feedback-detail .correct-word {
         font-weight: 600;
-        color: #2d7a4a;
+        color: #2d7a4a; /* CHANGE: Correct word highlight color (green) */
       }
+
       .feedback-area .feedback-detail .wrong-word {
         font-weight: 600;
-        color: #b34a4a;
+        color: #b34a4a; /* CHANGE: Wrong word highlight color (red) */
       }
+
       .feedback-area .feedback-detail .grammar-hint {
         display: block;
         margin-top: 6px;
         padding: 8px 12px;
-        background: rgba(255, 255, 255, 0.5);
+        background: rgba(
+          255,
+          255,
+          255,
+          0.5
+        ); /* CHANGE: Grammar hint background */
         border-radius: 8px;
-        font-size: 0.85rem;
-        color: #3d352b;
-        border-left: 3px solid #8a7a6a;
+        font-size: 0.85rem; /* CHANGE: Grammar hint text size */
+        color: #3d352b; /* CHANGE: Grammar hint text color */
+        border-left: 3px solid #8a7a6a; /* CHANGE: Grammar hint left border color */
       }
 
       /* ============================================================
-           COMPLETION OVERLAY
-           ============================================================ */
+         COMPLETION OVERLAY - shown when sprint is complete
+         ============================================================ */
       .completion-overlay {
         display: none;
-        background: #ffffff;
-        border: 3px solid #5a8a6a;
-        border-radius: 20px;
+        background: #ffffff; /* CHANGE: Completion overlay background */
+        border: 3px solid #5a8a6a; /* CHANGE: Completion overlay border color */
+        border-radius: 20px; /* CHANGE: Completion overlay roundness */
         padding: 32px 28px;
         text-align: center;
         margin-top: 8px;
       }
+
       .completion-overlay.visible {
         display: block;
       }
+
       .completion-overlay h2 {
-        font-size: 1.8rem;
-        color: #2d7a4a;
+        font-size: 1.8rem; /* CHANGE: "Sprint Complete!" title size */
+        color: #2d7a4a; /* CHANGE: "Sprint Complete!" title color */
         margin-bottom: 6px;
       }
+
       .completion-overlay .completion-stats {
-        font-size: 1rem;
-        color: #3d352b;
+        font-size: 1rem; /* CHANGE: Completion stats text size */
+        color: #3d352b; /* CHANGE: Completion stats text color */
         margin: 12px 0;
         line-height: 1.8;
       }
+
       .completion-overlay .completion-stats .highlight-num {
         font-weight: 700;
-        color: #1a1a1a;
+        color: #1a1a1a; /* CHANGE: Highlighted number color in completion */
       }
+
       .completion-overlay .completion-actions {
         display: flex;
         gap: 12px;
@@ -588,168 +917,292 @@
       }
 
       /* ============================================================
-           RESPONSIVE
-           ============================================================ */
+         RESPONSIVE - Mobile styles (700px and below)
+         ============================================================ */
       @media (max-width: 700px) {
         .app-container {
           padding: 14px 12px 18px;
         }
+
         .app-header {
           flex-direction: column;
           align-items: stretch;
           gap: 8px;
         }
+
         .app-header h1 {
-          font-size: 1.1rem;
+          font-size: 1.1rem; /* CHANGE: Mobile title size */
           text-align: center;
         }
+
         .app-header h1 span {
           display: block;
-          font-size: 0.8rem;
+          font-size: 0.8rem; /* CHANGE: Mobile subtitle size */
         }
+
         .header-controls {
           justify-content: center;
         }
+
         .header-controls select,
         .header-controls button {
-          font-size: 0.65rem;
+          font-size: 0.65rem; /* CHANGE: Mobile controls text size */
           padding: 3px 8px;
         }
+
         .sentence-jp {
-          font-size: 1.4rem;
+          font-size: 1.4rem; /* CHANGE: Mobile Japanese text size */
           line-height: 2.2;
         }
+
         .sentence-jp ruby rt {
-          font-size: 0.55rem;
+          font-size: 0.55rem; /* CHANGE: Mobile furigana size */
         }
+
         .sentence-jp .blank-slot {
           min-width: 55px;
           min-height: 36px;
-          font-size: 1.3rem;
+          font-size: 1.3rem; /* CHANGE: Mobile blank slot text size */
           padding: 0 6px 2px 6px;
         }
+
         .sentence-jp .blank-slot .placed-word {
-          font-size: 1.3rem;
+          font-size: 1.3rem; /* CHANGE: Mobile placed word size */
         }
+
         .sentence-jp .blank-slot .placed-word ruby rt {
-          font-size: 0.5rem;
+          font-size: 0.5rem; /* CHANGE: Mobile placed word furigana size */
         }
+
         .sentence-jp .blank-slot .blank-number {
-          font-size: 0.6rem;
+          font-size: 0.6rem; /* CHANGE: Mobile blank number size */
         }
-        .word-bank .bank-word {
-          font-size: 1.15rem;
+
+        .order-slot {
+          font-size: 1.1rem; /* CHANGE: Mobile order slot text size */
           padding: 6px 14px;
+          min-width: 40px;
+        }
+
+        .order-slot .order-number {
+          font-size: 0.45rem; /* CHANGE: Mobile order number size */
+        }
+
+        .order-slot ruby rt {
+          font-size: 0.5rem; /* CHANGE: Mobile order slot furigana size */
+        }
+
+        .order-slot.empty {
+          min-width: 36px;
+          min-height: 36px;
+        }
+
+        .order-sentence-container .order-instruction {
+          font-size: 0.8rem; /* CHANGE: Mobile instruction text size */
+        }
+
+        .word-bank .bank-word {
+          font-size: 1.3rem !important; /* CHANGE: Mobile word bank text size */
+          padding: 8px 16px !important;
           min-width: 46px;
         }
+
         .word-bank .bank-word ruby rt {
-          font-size: 0.5rem;
+          font-size: 0.55rem !important; /* CHANGE: Mobile word bank furigana size */
         }
+
         .action-btn {
           padding: 8px 16px;
-          font-size: 0.8rem;
+          font-size: 0.8rem; /* CHANGE: Mobile button text size */
         }
+
         .progress-stats {
-          font-size: 0.7rem;
+          font-size: 0.7rem; /* CHANGE: Mobile stats text size */
           gap: 6px 12px;
         }
+
         .completion-overlay h2 {
-          font-size: 1.4rem;
+          font-size: 1.4rem; /* CHANGE: Mobile completion title size */
         }
+
         .feedback-area {
-          font-size: 0.85rem;
+          font-size: 0.85rem; /* CHANGE: Mobile feedback text size */
           padding: 12px 14px;
         }
+
         .sentence-area {
           padding: 14px 14px 12px;
         }
+
         .word-bank-area {
           padding: 12px 14px;
         }
+
+        .mode-toggle .mode-label {
+          font-size: 0.55rem; /* CHANGE: Mobile mode label size */
+        }
+
+        .mode-btn {
+          font-size: 0.55rem; /* CHANGE: Mobile mode button size */
+          padding: 2px 8px;
+        }
+
+        .select-mode-instruction {
+          font-size: 0.75rem; /* CHANGE: Mobile select instruction size */
+        }
       }
 
+      /* ============================================================
+         RESPONSIVE - Small mobile (480px and below)
+         ============================================================ */
       @media (max-width: 480px) {
         .app-container {
           padding: 8px 6px 12px;
           border-radius: 12px;
         }
+
         .sentence-jp {
-          font-size: 1.1rem;
+          font-size: 1.1rem; /* CHANGE: Small mobile Japanese text size */
           line-height: 1.8;
         }
+
         .sentence-jp ruby rt {
-          font-size: 0.45rem;
+          font-size: 0.45rem; /* CHANGE: Small mobile furigana size */
         }
+
         .sentence-jp .blank-slot {
           min-width: 44px;
           min-height: 30px;
-          font-size: 1rem;
+          font-size: 1rem; /* CHANGE: Small mobile blank slot text size */
           padding: 0 4px 2px 4px;
           border-bottom-width: 2px;
         }
+
         .sentence-jp .blank-slot .placed-word {
-          font-size: 1rem;
+          font-size: 1rem; /* CHANGE: Small mobile placed word size */
         }
+
         .sentence-jp .blank-slot .placed-word ruby rt {
-          font-size: 0.4rem;
+          font-size: 0.4rem; /* CHANGE: Small mobile placed word furigana size */
         }
+
         .sentence-jp .blank-slot .blank-number {
-          font-size: 0.5rem;
+          font-size: 0.5rem; /* CHANGE: Small mobile blank number size */
         }
-        .word-bank .bank-word {
-          font-size: 0.95rem;
+
+        .order-slot {
+          font-size: 0.9rem; /* CHANGE: Small mobile order slot text size */
           padding: 4px 12px;
+          min-width: 30px;
+          border-radius: 20px;
           border-width: 1.5px;
+        }
+
+        .order-slot .order-number {
+          font-size: 0.4rem; /* CHANGE: Small mobile order number size */
+        }
+
+        .order-slot .slot-placeholder {
+          font-size: 0.7rem; /* CHANGE: Small mobile placeholder size */
+        }
+
+        .order-slot ruby rt {
+          font-size: 0.4rem; /* CHANGE: Small mobile order slot furigana size */
+        }
+
+        .order-slot.empty {
+          min-width: 30px;
+          min-height: 30px;
+        }
+
+        .order-sentence-container {
+          gap: 8px 4px;
+        }
+
+        .order-sentence-container .order-instruction {
+          font-size: 0.7rem; /* CHANGE: Small mobile instruction text size */
+        }
+
+        .word-bank .bank-word {
+          font-size: 1.1rem !important; /* CHANGE: Small mobile word bank text size */
+          padding: 6px 14px !important;
           min-width: 38px;
+          border-width: 2px !important;
         }
+
         .word-bank .bank-word ruby rt {
-          font-size: 0.4rem;
+          font-size: 0.45rem !important; /* CHANGE: Small mobile word bank furigana size */
         }
+
         .word-bank .bank-word .word-tts-btn {
-          font-size: 0.6rem;
+          font-size: 0.6rem; /* CHANGE: Small mobile TTS button size */
           padding-left: 4px;
         }
+
         .action-btn {
           padding: 6px 12px;
-          font-size: 0.7rem;
+          font-size: 0.7rem; /* CHANGE: Small mobile button text size */
           border-radius: 30px;
         }
+
         .header-controls {
           gap: 4px 6px;
         }
+
         .header-controls select,
         .header-controls button {
-          font-size: 0.6rem;
+          font-size: 0.6rem; /* CHANGE: Small mobile controls text size */
           padding: 2px 6px;
         }
+
         .progress-stats {
-          font-size: 0.6rem;
+          font-size: 0.6rem; /* CHANGE: Small mobile stats text size */
           gap: 4px 8px;
         }
+
         .feedback-area {
-          font-size: 0.75rem;
+          font-size: 0.75rem; /* CHANGE: Small mobile feedback text size */
           padding: 10px 12px;
         }
+
         .completion-overlay {
           padding: 18px 14px;
         }
+
         .completion-overlay h2 {
-          font-size: 1.2rem;
+          font-size: 1.2rem; /* CHANGE: Small mobile completion title size */
         }
+
         .completion-overlay .completion-stats {
-          font-size: 0.85rem;
+          font-size: 0.85rem; /* CHANGE: Small mobile completion stats size */
         }
+
         .sentence-area {
           padding: 10px 8px 10px;
         }
+
         .word-bank-area {
           padding: 8px 10px;
+        }
+
+        .mode-toggle .mode-label {
+          font-size: 0.5rem; /* CHANGE: Small mobile mode label size */
+        }
+
+        .mode-btn {
+          font-size: 0.5rem; /* CHANGE: Small mobile mode button size */
+          padding: 2px 6px;
+        }
+
+        .select-mode-instruction {
+          font-size: 0.65rem; /* CHANGE: Small mobile select instruction size */
+          padding: 3px 6px;
         }
       }
 
       /* ============================================================
-           UTILITY
-           ============================================================ */
+         UTILITY CLASSES
+         ============================================================ */
       .hidden {
         display: none !important;
       }
@@ -763,18 +1216,15 @@
         margin-bottom: 8px;
       }
 
-      /* ============================================================
-           LOADING / EMPTY STATE
-           ============================================================ */
       .empty-state {
-        color: #b8a58b;
-        font-size: 0.9rem;
+        color: #b8a58b; /* CHANGE: Empty state text color */
+        font-size: 0.9rem; /* CHANGE: Empty state text size */
         text-align: center;
         padding: 20px 0;
       }
 
       .empty-state .empty-icon {
-        font-size: 2rem;
+        font-size: 2rem; /* CHANGE: Empty state icon size */
         display: block;
         margin-bottom: 8px;
       }
@@ -782,7 +1232,7 @@
   </head>
   <body>
     <div class="app-container" id="app">
-      <!-- ========== HEADER ========== -->
+      <!-- HEADER -->
       <div class="app-header">
         <h1>🧩 N5 Sentence Builder <span>— Master the sentences!</span></h1>
         <div class="header-controls">
@@ -793,6 +1243,13 @@
 
           <button id="furiganaToggle" class="toggle-btn active">🔤 ON</button>
 
+          <div class="mode-toggle">
+            <span class="mode-label">Mode:</span>
+            <button class="mode-btn active" data-mode="fill">📝 Fill</button>
+            <button class="mode-btn" data-mode="order">🔄 Order</button>
+            <button class="mode-btn" data-mode="select-order">🎯 Select</button>
+          </div>
+
           <span style="font-size: 0.65rem; color: #7a6f60">Speed:</span>
           <button class="speed-btn" data-speed="0.75">0.75x</button>
           <button class="speed-btn active" data-speed="1.0">1.0x</button>
@@ -800,7 +1257,7 @@
         </div>
       </div>
 
-      <!-- ========== PROGRESS ========== -->
+      <!-- PROGRESS -->
       <div class="progress-section">
         <div class="progress-stats">
           <span class="stat-item correct"
@@ -833,7 +1290,7 @@
         </div>
       </div>
 
-      <!-- ========== SENTENCE AREA ========== -->
+      <!-- SENTENCE -->
       <div class="sentence-area" id="sentenceArea">
         <div class="translation-toggle">
           <button id="translationToggleBtn">📖 Show Translation</button>
@@ -853,7 +1310,7 @@
         </div>
       </div>
 
-      <!-- ========== WORD BANK ========== -->
+      <!-- WORD BANK -->
       <div class="word-bank-area" id="wordBankArea">
         <div class="word-bank-label">
           <span>📦 Word Bank</span>
@@ -866,7 +1323,7 @@
         </div>
       </div>
 
-      <!-- ========== CONTROLS ========== -->
+      <!-- CONTROLS -->
       <div class="action-controls">
         <button class="action-btn primary" id="submitBtn" disabled>
           ✅ Submit
@@ -874,13 +1331,13 @@
         <button class="action-btn danger" id="resetBtn">⟳ Reset Sprint</button>
       </div>
 
-      <!-- ========== FEEDBACK ========== -->
+      <!-- FEEDBACK -->
       <div class="feedback-area" id="feedbackArea">
         <div class="feedback-title" id="feedbackTitle"></div>
         <div class="feedback-detail" id="feedbackDetail"></div>
       </div>
 
-      <!-- ========== COMPLETION OVERLAY ========== -->
+      <!-- COMPLETION -->
       <div class="completion-overlay" id="completionOverlay">
         <h2>🎉 Sprint Complete!</h2>
         <div class="completion-stats" id="completionStats">
@@ -908,7 +1365,6 @@
         </div>
       </div>
 
-      <!-- ========== HINT TEXT ========== -->
       <div
         style="
           text-align: center;
@@ -924,39 +1380,16 @@
       </div>
     </div>
 
-    <!-- ============================================================
-    JAVASCRIPT
-    ============================================================ -->
-
-    <!-- 1. DATA - These are copied from n5-study-app, UNCHANGED -->
+    <!-- ===== JAVASCRIPT ===== -->
     <script src="js/data/sentences.js"></script>
     <script src="js/data/wordDict.js"></script>
-
-    <!-- 2. UTILITIES - These are copied from n5-study-app, UNCHANGED -->
     <script src="js/utils/furigana.js"></script>
-    <script src="js/utils/tooltips.js"></script>
-
-    <!-- 3. MODULES - NEW for sentence builder -->
     <script src="js/modules/audio.js"></script>
     <script src="js/modules/sentenceBuilder.js"></script>
 
-    <!-- 4. INIT -->
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         console.log("📚 N5 Sentence Builder starting...");
-        console.log(
-          "📖 sentencesData count:",
-          typeof sentencesData !== "undefined"
-            ? sentencesData.length
-            : "undefined",
-        );
-        console.log(
-          "📚 wordDict keys:",
-          typeof wordDict !== "undefined"
-            ? Object.keys(wordDict).length
-            : "undefined",
-        );
-
         setTimeout(function () {
           if (typeof SentenceBuilder !== "undefined") {
             try {
@@ -976,16 +1409,10 @@
       });
     </script>
 
-    <!-- ============================================================
-SERVICE WORKER REGISTRATION - FIXED FOR GITHUB PAGES
-============================================================ -->
     <script>
-      // Register Service Worker for PWA offline support
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          // ✅ Use the full path for GitHub Pages
           const swPath = "/n5-sentence-builder/sw.js";
-
           navigator.serviceWorker
             .register(swPath)
             .then((registration) => {
