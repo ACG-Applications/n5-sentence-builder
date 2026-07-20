@@ -119,6 +119,7 @@ class SentenceBuilder {
     this.setupDebugMode = this.setupDebugMode.bind(this);
     this.exposeTestHelpers = this.exposeTestHelpers.bind(this);
     this.autoCompleteSprint = this.autoCompleteSprint.bind(this);
+    this.clearAllProgress = this.clearAllProgress.bind(this);
     this.debug = this.debug.bind(this);
     // Helper to reduce duplication
     this.buildCorrectSentenceHTML = this.buildCorrectSentenceHTML.bind(this);
@@ -145,6 +146,7 @@ class SentenceBuilder {
       bankCount: document.getElementById("bankCount"),
       submitBtn: document.getElementById("submitBtn"),
       resetBtn: document.getElementById("resetBtn"),
+      clearProgressBtn: document.getElementById("clearProgressBtn"),
       feedbackArea: document.getElementById("feedbackArea"),
       feedbackTitle: document.getElementById("feedbackTitle"),
       feedbackDetail: document.getElementById("feedbackDetail"),
@@ -400,7 +402,7 @@ class SentenceBuilder {
   }
 
   // ============================================================
-  // SENTENCE LOADING - FIXED
+  // SENTENCE LOADING
   // ============================================================
 
   loadNextSentence() {
@@ -2057,7 +2059,7 @@ class SentenceBuilder {
   }
 
   // ============================================================
-  // ADD FEEDBACK BUTTONS - FIXED
+  // ADD FEEDBACK BUTTONS
   // ============================================================
 
   addFeedbackButtons() {
@@ -2125,7 +2127,7 @@ class SentenceBuilder {
   }
 
   // ============================================================
-  // COMPLETION - FIXED
+  // COMPLETION
   // ============================================================
 
   showCompletion() {
@@ -2252,6 +2254,37 @@ class SentenceBuilder {
     this.syncPrimaryModeUI();
 
     console.log("⟳ Sprint reset");
+  }
+
+  // ============================================================
+  // CLEAR ALL PROGRESS
+  // ============================================================
+
+  clearAllProgress() {
+    if (!confirm('⚠️ This will delete ALL your progress for ALL sprints. Are you sure?')) {
+      return;
+    }
+
+    try {
+      // Clear all sentence_builder_* keys from localStorage
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('sentence_builder_')) {
+          keysToRemove.push(key);
+        }
+      }
+
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+
+      console.log(`🗑️ Cleared ${keysToRemove.length} progress items`);
+
+      // Reload the page to start fresh
+      location.reload();
+    } catch (error) {
+      console.error('Error clearing progress:', error);
+      alert('Failed to clear progress. Please try again.');
+    }
   }
 
   // ============================================================
@@ -2467,6 +2500,13 @@ class SentenceBuilder {
       this.elements.sprintSelect.value = nextIndex;
       this.loadSprint(nextIndex);
     });
+
+    // Clear Progress button
+    if (this.elements.clearProgressBtn) {
+      this.elements.clearProgressBtn.addEventListener("click", () => {
+        this.clearAllProgress();
+      });
+    }
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !this.elements.submitBtn.disabled) {

@@ -179,7 +179,7 @@
       }
 
       /* ============================================================
-         MASTERY SELECTOR - NEW
+         MASTERY SELECTOR
          ============================================================ */
       .mastery-selector {
         display: inline-flex;
@@ -850,6 +850,18 @@
         background: #3a6a7a; /* CHANGE: TTS button hover background */
       }
 
+      /* Clear Progress button */
+      .action-btn.clear-btn {
+        background: #8a7a6a;
+        color: white;
+        font-size: 0.7rem;
+        padding: 6px 14px;
+      }
+
+      .action-btn.clear-btn:hover:not(:disabled) {
+        background: #7a6a5a;
+      }
+
       /* ============================================================
          FEEDBACK AREA - shows results after submission
          ============================================================ */
@@ -1318,7 +1330,7 @@
             <button class="mode-btn" data-mode="select-order">🎯 Select</button>
           </div>
 
-          <!-- ===== NEW: MASTERY SELECTOR ===== -->
+          <!-- Mastery Selector -->
           <div class="mastery-selector">
             <span class="mastery-label">Mastery:</span>
             <select id="primaryModeSelect">
@@ -1408,6 +1420,9 @@
           ✅ Submit
         </button>
         <button class="action-btn danger" id="resetBtn">⟳ Reset Sprint</button>
+        <button class="action-btn clear-btn" id="clearProgressBtn">
+          🗑️ Clear All Progress
+        </button>
       </div>
 
       <!-- FEEDBACK -->
