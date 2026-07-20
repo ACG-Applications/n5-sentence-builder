@@ -19,6 +19,9 @@ class MasteryManager {
     this.allCompleted = false;
     this.completionShown = false;
 
+    // Sprint state
+    this.sprintStarted = false;
+
     // Statistics
     this.stats = {
       correct: 0,
@@ -39,45 +42,25 @@ class MasteryManager {
   // INITIALIZATION
   // ============================================================
 
-  /**
-   * Initialize or reset for a sprint
-   * @param {number} sprintId - The sprint ID
-   * @param {number} totalSentences - Total sentences in this sprint
-   * @param {string} defaultMode - Default primary mode ('fill' | 'order' | 'select-order')
-   */
   init(sprintId, totalSentences, defaultMode = "fill") {
     this.sprintId = sprintId;
     this.sprintTotalSentences = totalSentences;
     this.primaryMode = defaultMode;
 
-    // Try to load saved progress
     const loaded = this.load(sprintId);
 
-    // If no saved progress, initialize fresh
     if (!loaded) {
-      console.log(
-        `📂 No saved data for sprint ${sprintId}, initializing fresh`,
-      );
+      console.log(`📂 No saved data for sprint ${sprintId}, initializing fresh`);
       this.reset(true);
     } else {
-      // Even if loaded, ensure we have the correct total sentences
       this.sprintTotalSentences = totalSentences;
-      // Ensure currentCycleSentences is valid
-      if (
-        !this.currentCycleSentences ||
-        this.currentCycleSentences.length === 0
-      ) {
-        this.currentCycleSentences = Array.from(
-          { length: totalSentences },
-          (_, i) => i,
-        );
+      if (!this.currentCycleSentences || this.currentCycleSentences.length === 0) {
+        this.currentCycleSentences = Array.from({ length: totalSentences }, (_, i) => i);
         this.shuffleArray(this.currentCycleSentences);
       }
     }
 
-    // Update practice mode status
     this.updatePracticeMode(this.currentMode);
-
     return this;
   }
 
@@ -85,16 +68,13 @@ class MasteryManager {
   // PROGRESS TRACKING
   // ============================================================
 
-  /**
-   * Track an attempt on a sentence
-   * @param {number} sentenceIndex - The sentence index in the sprint
-   * @param {boolean} isCorrect - Whether the answer was correct
-   * @param {string} mode - The mode being used ('fill' | 'order' | 'select-order')
-   * @returns {Object} Updated progress data
-   */
   trackAttempt(sentenceIndex, isCorrect, mode) {
-    // Only track in primary mode
+    // ALWAYS mark sprint as started on ANY attempt
+    this.sprintStarted = true;
+    
+    // Only track stats in primary mode
     if (mode !== this.primaryMode) {
+      this.save();
       return this.getProgress();
     }
 
@@ -116,32 +96,21 @@ class MasteryManager {
       this.failedIndices.add(sentenceIndex);
     }
 
-    // Check if sprint is complete
     this.checkCompletion();
-
+    this.save();
     return this.getProgress();
   }
 
-  /**
-   * Get the next sentence to practice
-   * @returns {number|null} The next sentence index, or null if none
-   */
   getNextSentence() {
-    // If all completed, return null
-    if (this.allCompleted) {
-      return null;
-    }
+    if (this.allCompleted) return null;
 
-    // If no sentences left in current cycle
     if (this.currentCycleSentences.length === 0) {
-      // If no failed sentences, we're done
       if (this.failedIndices.size === 0) {
         this.allCompleted = true;
         this.completionShown = false;
         return null;
       }
 
-      // Start new cycle with failed sentences
       this.currentCycleSentences = Array.from(this.failedIndices);
       this.failedIndices = new Set();
       this.cycleNumber++;
@@ -151,22 +120,16 @@ class MasteryManager {
     return this.currentCycleSentences.shift();
   }
 
-  /**
-   * Reset all progress for the current sprint
-   * @param {boolean} keepPrimaryMode - Whether to keep the primary mode
-   */
   reset(keepPrimaryMode = true) {
     const primaryMode = keepPrimaryMode ? this.primaryMode : "fill";
 
     this.masteredIndices = new Set();
     this.failedIndices = new Set();
-    this.currentCycleSentences = Array.from(
-      { length: this.sprintTotalSentences },
-      (_, i) => i,
-    );
+    this.currentCycleSentences = Array.from({ length: this.sprintTotalSentences }, (_, i) => i);
     this.cycleNumber = 1;
     this.allCompleted = false;
     this.completionShown = false;
+    this.sprintStarted = false;
     this.stats = {
       correct: 0,
       incorrect: 0,
@@ -175,22 +138,36 @@ class MasteryManager {
       sentenceCorrect: {},
     };
 
-    if (!keepPrimaryMode) {
-      this.primaryMode = primaryMode;
-    }
+    if (!keepPrimaryMode) this.primaryMode = primaryMode;
 
     this.shuffleArray(this.currentCycleSentences);
     this.save();
+  }
+
+  /**
+   * Reset mastery progress but keep the mode
+   * This allows users to switch mastery modes mid-sprint
+   */
+  resetMasteryProgress() {
+    this.reset(true);
+    this.sprintStarted = false;
+    this.save();
+    return true;
+  }
+
+  /**
+   * Check if primary mode can be changed
+   * @returns {boolean} True if mode can be changed
+   */
+  canChangePrimaryMode() {
+    // Can change if: no progress made OR sprint is complete
+    return !this.sprintStarted || this.allCompleted;
   }
 
   // ============================================================
   // PROGRESS QUERIES
   // ============================================================
 
-  /**
-   * Get current progress data
-   * @returns {Object} Progress data
-   */
   getProgress() {
     const total = this.sprintTotalSentences;
     const mastered = this.masteredIndices.size;
@@ -201,13 +178,11 @@ class MasteryManager {
       isComplete: mastered === total && total > 0,
       isPracticeMode: this.isPracticeMode,
       primaryMode: this.primaryMode,
+      sprintStarted: this.sprintStarted,
+      isLocked: this.sprintStarted && !this.allCompleted, // NEW: Lock status
     };
   }
 
-  /**
-   * Get all statistics
-   * @returns {Object} Stats data
-   */
   getStats() {
     return {
       ...this.stats,
@@ -216,36 +191,18 @@ class MasteryManager {
     };
   }
 
-  /**
-   * Check if a sentence is mastered
-   * @param {number} sentenceIndex - The sentence index
-   * @returns {boolean} True if mastered
-   */
   isSentenceMastered(sentenceIndex) {
     return this.masteredIndices.has(sentenceIndex);
   }
 
-  /**
-   * Check if a sentence has failed
-   * @param {number} sentenceIndex - The sentence index
-   * @returns {boolean} True if failed
-   */
   isSentenceFailed(sentenceIndex) {
     return this.failedIndices.has(sentenceIndex);
   }
 
-  /**
-   * Get the number of mastered sentences
-   * @returns {number} Count of mastered sentences
-   */
   getMasteredCount() {
     return this.masteredIndices.size;
   }
 
-  /**
-   * Get the number of failed sentences
-   * @returns {number} Count of failed sentences
-   */
   getFailedCount() {
     return this.failedIndices.size;
   }
@@ -254,42 +211,43 @@ class MasteryManager {
   // MODE MANAGEMENT
   // ============================================================
 
-  /**
-   * Set the primary mastery mode
-   * @param {string} mode - 'fill' | 'order' | 'select-order'
-   * @param {string} currentMode - The current active mode
-   */
   setPrimaryMode(mode, currentMode = null) {
     if (!["fill", "order", "select-order"].includes(mode)) {
       console.warn(`Invalid primary mode: ${mode}`);
-      return;
+      return false;
+    }
+
+    // Check if mode can be changed
+    if (!this.canChangePrimaryMode()) {
+      console.warn(`⚠️ Cannot change primary mode mid-sprint. Progress exists in ${this.primaryMode} mode.`);
+      return false;
     }
 
     this.primaryMode = mode;
     this.sprintPrimaryModes[this.sprintId] = mode;
     this.updatePracticeMode(currentMode || this.currentMode);
     this.save();
+    return true;
   }
 
-  /**
-   * Update practice mode status based on current mode
-   * @param {string} currentMode - The current active mode
-   */
   updatePracticeMode(currentMode) {
     this.currentMode = currentMode;
-    this.isPracticeMode = currentMode !== this.primaryMode;
+    // If sprint hasn't been started yet, don't show practice mode
+    if (!this.sprintStarted && !this.allCompleted) {
+      this.isPracticeMode = false;
+    } else {
+      this.isPracticeMode = currentMode !== this.primaryMode;
+    }
     return this.isPracticeMode;
   }
 
-  /**
-   * Get the current mode status
-   * @returns {Object} Mode status
-   */
   getModeStatus() {
     return {
       primaryMode: this.primaryMode,
       currentMode: this.currentMode,
       isPracticeMode: this.isPracticeMode,
+      sprintStarted: this.sprintStarted,
+      isLocked: this.sprintStarted && !this.allCompleted,
     };
   }
 
@@ -297,10 +255,6 @@ class MasteryManager {
   // COMPLETION
   // ============================================================
 
-  /**
-   * Check if the sprint is complete and update state
-   * @returns {boolean} True if complete
-   */
   checkCompletion() {
     const progress = this.getProgress();
     if (progress.isComplete) {
@@ -309,18 +263,11 @@ class MasteryManager {
     return this.allCompleted;
   }
 
-  /**
-   * Mark completion as shown (for overlay control)
-   */
   markCompletionShown() {
     this.completionShown = true;
     this.save();
   }
 
-  /**
-   * Check if completion should be shown
-   * @returns {boolean} True if completion should be shown
-   */
   shouldShowCompletion() {
     return this.allCompleted && !this.completionShown;
   }
@@ -329,10 +276,6 @@ class MasteryManager {
   // PERSISTENCE
   // ============================================================
 
-  /**
-   * Save progress to localStorage
-   * @returns {boolean} Success status
-   */
   save() {
     try {
       const key = `sentence_builder_${this.sprintId}`;
@@ -343,6 +286,7 @@ class MasteryManager {
         cycleNumber: this.cycleNumber,
         allCompleted: this.allCompleted,
         completionShown: this.completionShown,
+        sprintStarted: this.sprintStarted,
         stats: this.stats,
         primaryMode: this.primaryMode,
         sprintPrimaryModes: this.sprintPrimaryModes,
@@ -355,30 +299,23 @@ class MasteryManager {
     }
   }
 
-  /**
-   * Load progress from localStorage
-   * @param {number} sprintId - The sprint ID to load
-   * @returns {boolean} True if progress was loaded
-   */
   load(sprintId) {
     try {
       this.sprintId = sprintId;
       const key = `sentence_builder_${sprintId}`;
       const stored = localStorage.getItem(key);
 
-      if (!stored) {
-        return false;
-      }
+      if (!stored) return false;
 
       const data = JSON.parse(stored);
 
-      // Restore data
       this.masteredIndices = new Set(data.masteredIndices || []);
       this.failedIndices = new Set(data.failedIndices || []);
       this.currentCycleSentences = data.currentCycleSentences || [];
       this.cycleNumber = data.cycleNumber || 1;
       this.allCompleted = data.allCompleted || false;
       this.completionShown = data.completionShown || false;
+      this.sprintStarted = data.sprintStarted || false;
       this.stats = data.stats || {
         correct: 0,
         incorrect: 0,
@@ -387,26 +324,15 @@ class MasteryManager {
         sentenceCorrect: {},
       };
 
-      // Load primary mode
       this.sprintPrimaryModes = data.sprintPrimaryModes || {};
-      this.primaryMode =
-        this.sprintPrimaryModes[sprintId] || data.primaryMode || "fill";
+      this.primaryMode = this.sprintPrimaryModes[sprintId] || data.primaryMode || "fill";
 
-      // Ensure currentCycleSentences is valid
-      if (
-        !this.currentCycleSentences ||
-        this.currentCycleSentences.length === 0
-      ) {
-        this.currentCycleSentences = Array.from(
-          { length: this.sprintTotalSentences },
-          (_, i) => i,
-        );
+      if (!this.currentCycleSentences || this.currentCycleSentences.length === 0) {
+        this.currentCycleSentences = Array.from({ length: this.sprintTotalSentences }, (_, i) => i);
         this.shuffleArray(this.currentCycleSentences);
       }
 
-      // Update practice mode status
       this.updatePracticeMode(this.currentMode);
-
       return true;
     } catch (error) {
       console.error("Error loading progress:", error);
@@ -414,9 +340,6 @@ class MasteryManager {
     }
   }
 
-  /**
-   * Clear all saved progress for this sprint
-   */
   clearSavedProgress() {
     try {
       const key = `sentence_builder_${this.sprintId}`;
@@ -430,11 +353,6 @@ class MasteryManager {
   // UTILITY
   // ============================================================
 
-  /**
-   * Shuffle an array in place (Fisher-Yates)
-   * @param {Array} arr - The array to shuffle
-   * @returns {Array} The shuffled array
-   */
   shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -443,22 +361,19 @@ class MasteryManager {
     return arr;
   }
 
-  /**
-   * Get a string summary of current state (for debugging)
-   * @returns {string} Summary string
-   */
   getSummary() {
     const progress = this.getProgress();
     return (
       `Sprint ${this.sprintId}: ${progress.mastered}/${progress.total} mastered ` +
       `(${Math.round(progress.progress)}%) | Mode: ${this.primaryMode} ` +
       `| Practice: ${this.isPracticeMode ? "ON" : "OFF"} ` +
+      `| Started: ${this.sprintStarted ? "YES" : "NO"} ` +
+      `| Locked: ${progress.isLocked ? "YES" : "NO"} ` +
       `| Cycle: ${this.cycleNumber} | Attempts: ${this.stats.attempts}`
     );
   }
 }
 
-// Make available globally
 if (typeof window !== "undefined") {
   window.MasteryManager = MasteryManager;
 }

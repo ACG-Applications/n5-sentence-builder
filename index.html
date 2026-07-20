@@ -1329,7 +1329,6 @@
             <button class="mode-btn" data-mode="order">🔄 Order</button>
             <button class="mode-btn" data-mode="select-order">🎯 Select</button>
           </div>
-
           <!-- Mastery Selector -->
           <div class="mastery-selector">
             <span class="mastery-label">Mastery:</span>
@@ -1339,8 +1338,25 @@
               <option value="select-order">🎯 Select</option>
             </select>
             <span id="modeStatus">📊 Mastery: Fill</span>
+            <button
+              id="resetMasteryBtn"
+              class="reset-mastery-btn"
+              style="
+                display: none;
+                font-size: 0.55rem;
+                padding: 2px 8px;
+                border-radius: 12px;
+                border: 1px solid #b34a4a;
+                background: #fff;
+                color: #b34a4a;
+                cursor: pointer;
+                margin-left: 4px;
+                white-space: nowrap;
+              "
+            >
+              🔄 Reset Progress
+            </button>
           </div>
-
           <span style="font-size: 0.65rem; color: #7a6f60">Speed:</span>
           <button class="speed-btn" data-speed="0.75">0.75x</button>
           <button class="speed-btn active" data-speed="1.0">1.0x</button>

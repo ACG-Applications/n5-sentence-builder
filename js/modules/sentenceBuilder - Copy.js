@@ -85,7 +85,6 @@ class SentenceBuilder {
     this.showFeedbackSelectOrderError = this.showFeedbackSelectOrderError.bind(this);
     this.showCompletion = this.showCompletion.bind(this);
     this.resetSprint = this.resetSprint.bind(this);
-    this.resetMasteryProgress = this.resetMasteryProgress.bind(this);
     this.toggleFurigana = this.toggleFurigana.bind(this);
     this.toggleTranslation = this.toggleTranslation.bind(this);
     this.setSpeed = this.setSpeed.bind(this);
@@ -148,7 +147,6 @@ class SentenceBuilder {
       submitBtn: document.getElementById("submitBtn"),
       resetBtn: document.getElementById("resetBtn"),
       clearProgressBtn: document.getElementById("clearProgressBtn"),
-      resetMasteryBtn: document.getElementById("resetMasteryBtn"),
       feedbackArea: document.getElementById("feedbackArea"),
       feedbackTitle: document.getElementById("feedbackTitle"),
       feedbackDetail: document.getElementById("feedbackDetail"),
@@ -170,7 +168,6 @@ class SentenceBuilder {
       compNextSprintBtn: document.getElementById("compNextSprintBtn"),
     };
 
-    // Get data ONCE
     const data = this.getData();
     if (!data || !data.length) {
       console.error("❌ sentencesData not found!");
@@ -178,45 +175,16 @@ class SentenceBuilder {
       return;
     }
 
-    // Build sprints
     this.buildSprints();
     this.populateSprintSelector();
-
-    // Load progress
     this.loadProgress();
-
-    // Setup event listeners and UI
     this.setupEventListeners();
     this.setupDebugMode();
     this.exposeTestHelpers();
     this.syncModeUI();
 
-    // Load the first sprint if available
     if (this.sprints.length > 0) {
-      this.activeSprintIndex = 0;
-      this.sprintSentences = this.getSprintSentences(0);
-
-      if (this.sprintSentences && this.sprintSentences.length > 0) {
-        // Initialize mastery
-        this.mastery.init(0, this.sprintSentences.length, "fill");
-        this.mastery.isPracticeMode = false;
-        this.mastery.sprintStarted = false;
-        this.mastery.updatePracticeMode(this.mode);
-        this.mastery.save();
-
-        this.elements.sprintSelect.value = 0;
-        this.elements.completionOverlay.classList.remove("visible");
-        this.hideFeedback();
-
-        this.syncModeUI();
-        this.syncPrimaryModeUI();
-        this.loadNextSentence();
-        this.updateStats();
-
-        console.log(`📚 Sprint 0 loaded with ${this.sprintSentences.length} sentences`);
-      } else {
-        console.error("❌ No sentences found for sprint 0");
-      }
+      this.loadSprint(0);
     }
 
     console.log(`✅ Sentence Builder initialized! Mode: ${this.mode}`);
@@ -262,50 +230,14 @@ class SentenceBuilder {
 
   syncModeUI() {
     const buttons = document.querySelectorAll(".mode-btn");
-    const progress = this.mastery.getProgress();
-    const isLocked = progress.isLocked;
-    const primaryMode = this.mastery.primaryMode;
-    const modeLabels = {
-      fill: "📝 Fill",
-      order: "🔄 Order",
-      "select-order": "🎯 Select",
-    };
-
     buttons.forEach((btn) => {
-      const mode = btn.dataset.mode;
-      const isActive = mode === this.mode;
-      
-      // Check if this mode is locked (mastery in progress, trying to switch to non-mastery mode)
-      const isModeLocked = isLocked && mode !== primaryMode;
-      
-      if (isModeLocked) {
-        btn.classList.add("locked");
-        btn.style.background = "#f0ebe3";
-        btn.style.color = "#b8a58b";
-        btn.style.borderColor = "#d4c9b8";
-        btn.style.cursor = "not-allowed";
-        btn.style.opacity = "0.5";
-        btn.title = `🔒 Complete ${modeLabels[primaryMode]} mastery first! (${progress.mastered}/${progress.total})`;
-        btn.disabled = true;
-      } else {
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.classList.remove("locked");
-        btn.style.background = isActive ? "#5a8a6a" : "#faf8f5";
-        btn.style.color = isActive ? "white" : "#3d352b";
-        btn.style.borderColor = isActive ? "#4a7a5a" : "#d4c9b8";
-        btn.style.cursor = "pointer";
-        btn.title = "";
-      }
+      const isActive = btn.dataset.mode === this.mode;
+      btn.classList.toggle("active", isActive);
+      btn.style.background = isActive ? "#5a8a6a" : "#faf8f5";
+      btn.style.color = isActive ? "white" : "#3d352b";
+      btn.style.borderColor = isActive ? "#4a7a5a" : "#d4c9b8";
     });
-
-    // Show/hide reset mastery button
-    if (this.elements.resetMasteryBtn) {
-      const showReset = this.mastery.sprintStarted && !this.mastery.allCompleted;
-      this.elements.resetMasteryBtn.style.display = showReset ? "inline-block" : "none";
-    }
-
-    console.log(`🎯 UI synced to mode: ${this.mode}, locked: ${isLocked}`);
+    console.log(`🎯 UI synced to mode: ${this.mode}`);
   }
 
   syncPrimaryModeUI() {
@@ -323,74 +255,24 @@ class SentenceBuilder {
       "select-order": "🎯 Select",
     };
     const label = modeLabels[this.mastery.primaryMode] || "Fill";
-    const currentLabel = modeLabels[this.mode] || this.mode;
 
-    const progress = this.mastery.getProgress();
-    const sprintStarted = progress.sprintStarted;
-    const isLocked = progress.isLocked;
-
-    // CASE 1: Sprint not started yet
-    if (!sprintStarted && !this.mastery.allCompleted) {
-      statusEl.textContent = `📊 Mastery: ${label} (Not started)`;
-      statusEl.style.background = "#f5f0eb";
+    if (this.mastery.isPracticeMode) {
+      statusEl.textContent = `🔧 Practice (Mastery: ${label})`;
+      statusEl.style.background = "#f0ebe3";
       statusEl.style.color = "#7a6f60";
       statusEl.style.border = "1px solid #d4c9b8";
       statusEl.style.padding = "2px 10px";
       statusEl.style.borderRadius = "12px";
       statusEl.style.fontSize = "0.65rem";
-      statusEl.title = `Mastery mode: ${label}. Sprint not started yet.`;
-      return;
-    }
-
-    // CASE 2: Locked mastery mode (in progress)
-    if (isLocked) {
-      const practiceLabel = modeLabels[this.mode] || this.mode;
-      statusEl.textContent = `🔒 Mastery: ${label} (${progress.mastered}/${progress.total}) | Practicing: ${practiceLabel}`;
-      statusEl.style.background = "#fff8e8";
-      statusEl.style.color = "#8a7a4a";
-      statusEl.style.border = "1px solid #d4c9b8";
-      statusEl.style.padding = "2px 10px";
-      statusEl.style.borderRadius = "12px";
-      statusEl.style.fontSize = "0.65rem";
-      statusEl.title = `Complete ${label} mastery to unlock other modes! (${progress.mastered}/${progress.total})`;
-      return;
-    }
-
-    // CASE 3: Practice mode active
-    if (this.mastery.isPracticeMode) {
-      statusEl.textContent = `🏋️ Practice (Mastery: ${label} | Current: ${currentLabel})`;
-      statusEl.style.background = "#e3f0ff";
-      statusEl.style.color = "#1a5a8a";
-      statusEl.style.border = "1px solid #4a8aba";
-      statusEl.style.padding = "2px 10px";
-      statusEl.style.borderRadius = "12px";
-      statusEl.style.fontSize = "0.65rem";
-      statusEl.title = `You're practicing in ${currentLabel}. Mastery is tracked in ${label}.`;
-      return;
-    }
-
-    // CASE 4: Sprint complete
-    if (this.mastery.allCompleted) {
-      statusEl.textContent = `🏆 Complete! (${label})`;
+    } else {
+      statusEl.textContent = `📊 Mastery: ${label}`;
       statusEl.style.background = "#eaf5ea";
       statusEl.style.color = "#2d7a4a";
       statusEl.style.border = "1px solid #5a8a6a";
       statusEl.style.padding = "2px 10px";
       statusEl.style.borderRadius = "12px";
       statusEl.style.fontSize = "0.65rem";
-      statusEl.title = `Sprint complete! Practice in any mode.`;
-      return;
     }
-
-    // CASE 5: Normal mastery mode (sprint started, not locked, not complete)
-    statusEl.textContent = `📊 Mastery: ${label} (${progress.mastered}/${progress.total})`;
-    statusEl.style.background = "#eaf5ea";
-    statusEl.style.color = "#2d7a4a";
-    statusEl.style.border = "1px solid #5a8a6a";
-    statusEl.style.padding = "2px 10px";
-    statusEl.style.borderRadius = "12px";
-    statusEl.style.fontSize = "0.65rem";
-    statusEl.title = `Mastery mode: ${label} (${progress.mastered}/${progress.total})`;
   }
 
   // ============================================================
@@ -501,9 +383,7 @@ class SentenceBuilder {
     // Initialize mastery manager
     this.mastery.init(sprintIndex, this.sprintSentences.length, "fill");
 
-    // Reset practice mode and started state when loading a new sprint
-    this.mastery.isPracticeMode = false;
-    this.mastery.sprintStarted = false;
+    // Update practice mode status
     this.mastery.updatePracticeMode(this.mode);
     this.mastery.save();
 
@@ -528,65 +408,51 @@ class SentenceBuilder {
   loadNextSentence() {
     // Check if sprint is complete
     if (this.mastery.allCompleted) {
-      // If we're not already in practice mode, switch to it
-      if (!this.mastery.isPracticeMode) {
-        console.log(`🔄 Sprint complete! Switching to practice mode.`);
-        this.mastery.isPracticeMode = true;
-        this.mastery.save();
-
-        // Show completion overlay once
-        if (this.mastery.shouldShowCompletion()) {
-          this.showCompletion();
-          this.mastery.markCompletionShown();
-          this.mastery.save();
-        }
-      }
-
-      // In practice mode, get the next sentence (cycling through)
+      // In practice mode, cycle through sentences for practice
       if (this.mastery.isPracticeMode) {
-        const data = this.getData();
-        if (!data || !data.length) {
-          console.warn("⚠️ No data available for practice");
-          return;
-        }
-
-        // Find the next sentence to practice
+        // Get the next sentence in the sprint (cycling)
         const totalSentences = this.sprintSentences.length;
         let nextIndex = this.currentSentenceIndex;
+        
+        // Find the next index (cycling forward)
         let found = false;
-
         for (let i = 0; i < totalSentences; i++) {
           nextIndex = (nextIndex + 1) % totalSentences;
-          // Get the actual sentence index from sprintSentences
-          const sentence = this.sprintSentences[nextIndex];
-          if (sentence && data[sentence.index]) {
+          // Check if this sentence exists
+          const data = this.getData();
+          if (data && data[nextIndex]) {
             found = true;
             break;
           }
         }
-
+        
         if (found) {
-          const sentenceData = this.sprintSentences[nextIndex];
-          this.currentSentenceIndex = sentenceData.index;
-          this.currentSentence = sentenceData.data;
+          this.currentSentenceIndex = nextIndex;
+          this.currentSentence = this.getData()[nextIndex];
           this.preparePuzzle();
           this.renderSentence();
           this.renderWordBank();
           this.updateStats();
           this.hideFeedback();
           this.updateSubmitButton();
-          this.elements.sentenceHint.textContent =
-            `🏋️ Practice mode (${this.mode}). All sentences mastered! Keep practicing!`;
-          this.elements.sentenceHint.style.color = "#4a8aba";
-          this.elements.sentenceTtsBtn.disabled = false;
-          this.syncModeUI();
-          this.syncPrimaryModeUI();
+          this.elements.sentenceHint.textContent = 
+            `💡 Practice mode (${this.mode}). Try the next sentence!`;
+          this.elements.sentenceHint.style.color = "#7a6f60";
           return;
         }
       }
-
-      // If we get here, something went wrong
-      console.warn("⚠️ No practice sentences available");
+      
+      // If completion overlay hasn't been shown, show it
+      if (this.mastery.shouldShowCompletion()) {
+        this.showCompletion();
+        this.mastery.markCompletionShown();
+        this.mastery.save();
+      } else {
+        // Already shown completion, allow practice
+        this.elements.sentenceHint.textContent =
+          "💡 Sprint complete! Try different modes for more practice.";
+        this.elements.sentenceHint.style.color = "#7a6f60";
+      }
       return;
     }
 
@@ -626,10 +492,6 @@ class SentenceBuilder {
 
     this.elements.submitBtn.disabled = true;
     this.elements.sentenceTtsBtn.disabled = false;
-    
-    // Update status bar after loading
-    this.syncModeUI();
-    this.syncPrimaryModeUI();
 
     console.log(
       `📖 Loaded sentence ${this.currentSentenceIndex}: ${this.currentSentence.jp}`,
@@ -1284,52 +1146,13 @@ class SentenceBuilder {
 
     // Update hint based on mode status
     const modeStatus = this.mastery.getModeStatus();
-    const modeLabels = {
-      fill: "📝 Fill",
-      order: "🔄 Order",
-      "select-order": "🎯 Select",
-    };
-    const currentModeLabel = modeLabels[this.mode] || this.mode;
-    const primaryModeLabel =
-      modeLabels[this.mastery.primaryMode] || this.mastery.primaryMode;
-
-    const progress = this.mastery.getProgress();
-
-    // CASE 1: Sprint not started
-    if (!progress.sprintStarted && !this.mastery.allCompleted) {
+    if (modeStatus.isPracticeMode) {
       this.elements.sentenceHint.textContent =
-        `📊 Sprint not started yet. Choose a mastery mode and start practicing! (Mastery: ${primaryModeLabel})`;
+        `💡 Practice mode (${this.mode}). Mastery tracked in ${modeStatus.primaryMode} mode.`;
       this.elements.sentenceHint.style.color = "#7a6f60";
-      this.updateSubmitButton();
-      return;
-    }
-
-    // CASE 2: Locked mastery mode (in progress)
-    if (progress.isLocked) {
-      const practiceLabel = modeLabels[this.mode] || this.mode;
+    } else if (!this.mastery.allCompleted) {
       this.elements.sentenceHint.textContent =
-        `🔒 Mastery: ${primaryModeLabel} (${progress.mastered}/${progress.total}) | Practicing: ${practiceLabel}. Complete ${primaryModeLabel} to unlock other modes!`;
-      this.elements.sentenceHint.style.color = "#8a7a4a";
-      this.updateSubmitButton();
-      return;
-    }
-
-    // CASE 3: Practice mode
-    if (this.mastery.isPracticeMode) {
-      this.elements.sentenceHint.textContent =
-        `🏋️ Practice mode (${currentModeLabel}). All sentences mastered! Keep practicing! (Mastery tracked in ${primaryModeLabel})`;
-      this.elements.sentenceHint.style.color = "#4a8aba";
-    }
-    // CASE 4: Sprint complete
-    else if (this.mastery.allCompleted) {
-      this.elements.sentenceHint.textContent =
-        `🎉 Sprint complete! Switch to any mode for practice!`;
-      this.elements.sentenceHint.style.color = "#2d7a4a";
-    }
-    // CASE 5: Normal mastery mode
-    else {
-      this.elements.sentenceHint.textContent =
-        `📊 Mastery mode — your progress counts! (${primaryModeLabel})`;
+        `📊 Mastery mode — your progress counts! (${modeStatus.primaryMode})`;
       this.elements.sentenceHint.style.color = "#2d7a4a";
     }
 
@@ -1731,7 +1554,7 @@ class SentenceBuilder {
 
       // In practice mode, allow user to continue after seeing feedback
       if (this.mastery.isPracticeMode) {
-        this.elements.sentenceHint.textContent =
+        this.elements.sentenceHint.textContent = 
           `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
         this.elements.sentenceHint.style.color = "#7a6f60";
       } else {
@@ -1813,7 +1636,7 @@ class SentenceBuilder {
 
       // In practice mode, allow user to continue
       if (this.mastery.isPracticeMode) {
-        this.elements.sentenceHint.textContent =
+        this.elements.sentenceHint.textContent = 
           `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
         this.elements.sentenceHint.style.color = "#7a6f60";
       } else {
@@ -1901,7 +1724,7 @@ class SentenceBuilder {
 
       // In practice mode, allow user to continue
       if (this.mastery.isPracticeMode) {
-        this.elements.sentenceHint.textContent =
+        this.elements.sentenceHint.textContent = 
           `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
         this.elements.sentenceHint.style.color = "#7a6f60";
       } else {
@@ -2315,39 +2138,36 @@ class SentenceBuilder {
     const progress = this.mastery.getProgress();
     const modeStatus = this.mastery.getModeStatus();
 
-    // Ensure practice mode is set
-    if (!this.mastery.isPracticeMode) {
-      this.mastery.isPracticeMode = true;
-      this.mastery.save();
-    }
-
-    const modeLabels = {
-      fill: "📝 Fill",
-      order: "🔄 Order",
-      "select-order": "🎯 Select",
-    };
-
-    // Get the actual mode labels
-    const primaryModeLabel =
-      modeLabels[this.mastery.primaryMode] || this.mastery.primaryMode;
-    const practiceModeLabel = modeLabels[this.mode] || this.mode;
+    const modeLabel =
+      modeStatus.primaryMode === "fill"
+        ? "📝 Fill"
+        : modeStatus.primaryMode === "order"
+          ? "🔄 Order"
+          : "🎯 Select";
 
     // Build the completion stats HTML cleanly
     let statsHtml = `
-      <p style="color:#5a8a6a;font-weight:500;font-size:1.1rem;">🏆 Mastered in ${primaryModeLabel} mode!</p>
+      <p style="color:#5a8a6a;font-weight:500;font-size:1.1rem;">🏆 Mastered in ${modeLabel} mode!</p>
       <p style="color:#3d352b;margin-top:8px;">You've mastered all sentences in this sprint!</p>
       <p style="margin-top:12px;">✅ Correct: <span class="highlight-num">${stats.correct}</span></p>
       <p>❌ Incorrect: <span class="highlight-num">${stats.incorrect}</span></p>
       <p>📝 Total attempts: <span class="highlight-num">${stats.attempts}</span></p>
       <p>🔄 Cycles: <span class="highlight-num">${stats.cycleNumber}</span></p>
-      <p style="color:#4a8aba;margin-top:12px;font-size:0.95rem;">🏋️ You are now in <strong>Practice Mode</strong> — keep practicing!</p>
     `;
 
-    // Show which mode you were practicing in
-    if (this.mastery.isPracticeMode) {
+    // Add practice mode info if applicable
+    if (modeStatus.isPracticeMode) {
+      const modeLabels = {
+        fill: "📝 Fill",
+        order: "🔄 Order",
+        "select-order": "🎯 Select",
+      };
+      const currentModeLabel = modeLabels[this.mode] || this.mode;
+      const primaryModeLabel = modeLabels[modeStatus.primaryMode] || modeStatus.primaryMode;
+      
       statsHtml += `
         <p style="color:#7a6f60;font-size:0.85rem;margin-top:12px;padding:8px 12px;background:#f5f0eb;border-radius:8px;border-left:3px solid #b8a58b;">
-          💡 You were practicing in <strong>${practiceModeLabel}</strong> mode. 
+          💡 You were practicing in <strong>${currentModeLabel}</strong> mode. 
           Mastery is tracked in <strong>${primaryModeLabel}</strong> mode.
         </p>
       `;
@@ -2357,16 +2177,9 @@ class SentenceBuilder {
     this.elements.completionStats.innerHTML = statsHtml;
 
     this.elements.submitBtn.disabled = true;
-    this.elements.sentenceTtsBtn.disabled = false;
+    this.elements.sentenceTtsBtn.disabled = true;
 
-    // Update UI to show practice mode
-    this.syncModeUI();
-    this.syncPrimaryModeUI();
-    this.updateStats();
-
-    console.log(
-      `🎉 Sprint complete! Now in practice mode. Practice was in: ${this.mode}`,
-    );
+    console.log(`🎉 Sprint complete! (${modeLabel} mode)`);
   }
 
   // ============================================================
@@ -2390,11 +2203,8 @@ class SentenceBuilder {
           : "🎯 Select";
 
     let progressText = `${progress.mastered} / ${progress.total} mastered (${modeLabel})`;
-    if (this.mastery.isPracticeMode) {
+    if (modeStatus.isPracticeMode) {
       progressText += ` | 🏋️ Practicing: ${this.mode}`;
-    } else if (progress.isLocked) {
-      const practiceLabel = modeLabels[this.mode] || this.mode;
-      progressText += ` | 🔒 Practicing: ${practiceLabel}`;
     }
     this.elements.progressText.textContent = progressText;
     this.elements.progressPercent.textContent = `${Math.round(progress.progress)}%`;
@@ -2406,70 +2216,23 @@ class SentenceBuilder {
     this.elements.cycleCount.textContent = stats.cycleNumber;
     this.elements.masteredCount.textContent = progress.mastered;
 
-    // Visual indicator for locked/practice mode
-    if (progress.isLocked) {
-      this.elements.masteredCount.style.color = "#8a7a4a";
-      this.elements.progressText.style.color = "#8a7a4a";
-      this.elements.progressBar.style.background = "#f0ebe3";
-    } else if (this.mastery.isPracticeMode) {
-      this.elements.masteredCount.style.color = "#4a8aba";
-      this.elements.progressText.style.color = "#4a8aba";
-      this.elements.progressBar.style.background = "#e3f0ff";
+    // Visual indicator for practice mode
+    if (modeStatus.isPracticeMode) {
+      this.elements.masteredCount.style.color = "#b8a58b";
     } else {
       this.elements.masteredCount.style.color = "";
-      this.elements.progressText.style.color = "";
-      this.elements.progressBar.style.background = "";
     }
 
     // Show mode status in hint
-    if (progress.isLocked) {
-      const practiceLabel = modeLabels[this.mode] || this.mode;
-      const primaryLabel = modeLabels[this.mastery.primaryMode] || this.mastery.primaryMode;
+    if (modeStatus.isPracticeMode) {
       this.elements.sentenceHint.textContent =
-        `🔒 Mastery: ${primaryLabel} (${progress.mastered}/${progress.total}) | Practicing: ${practiceLabel}. Complete ${primaryLabel} to unlock other modes!`;
-      this.elements.sentenceHint.style.color = "#8a7a4a";
-    } else if (this.mastery.isPracticeMode) {
-      this.elements.sentenceHint.textContent =
-        `🏋️ Practice mode (${this.mode}). All sentences mastered! Keep practicing!`;
-      this.elements.sentenceHint.style.color = "#4a8aba";
-    } else if (this.mastery.allCompleted) {
-      this.elements.sentenceHint.textContent =
-        `🎉 Sprint complete! Switch to any mode for practice!`;
-      this.elements.sentenceHint.style.color = "#2d7a4a";
+        `💡 Practice mode (${this.mode}). Mastery tracked in ${modeStatus.primaryMode} mode.`;
+      this.elements.sentenceHint.style.color = "#7a6f60";
     } else if (!this.mastery.allCompleted) {
       this.elements.sentenceHint.textContent =
         `📊 Mastery mode — your progress counts! (${modeStatus.primaryMode})`;
       this.elements.sentenceHint.style.color = "#2d7a4a";
     }
-
-    // Update UI
-    this.syncModeUI();
-    this.syncPrimaryModeUI();
-  }
-
-  // ============================================================
-  // RESET MASTERY PROGRESS
-  // ============================================================
-
-  resetMasteryProgress() {
-    if (!confirm("⚠️ This will reset ALL progress for this sprint. Are you sure?")) {
-      return;
-    }
-
-    console.log("🔄 Resetting mastery progress...");
-    this.mastery.resetMasteryProgress();
-    
-    // Hide completion overlay
-    this.elements.completionOverlay.classList.remove("visible");
-    
-    // Reset UI state
-    this.hideFeedback();
-    this.loadNextSentence();
-    this.updateStats();
-    this.syncModeUI();
-    this.syncPrimaryModeUI();
-
-    console.log("✅ Mastery progress reset");
   }
 
   // ============================================================
@@ -2479,9 +2242,6 @@ class SentenceBuilder {
   resetSprint() {
     // Reset mastery manager (keep primary mode)
     this.mastery.reset(true);
-    // Reset practice mode and started state
-    this.mastery.isPracticeMode = false;
-    this.mastery.sprintStarted = false;
     this.mastery.save();
 
     // Hide completion overlay
@@ -2491,7 +2251,6 @@ class SentenceBuilder {
     this.hideFeedback();
     this.loadNextSentence();
     this.updateStats();
-    this.syncModeUI();
     this.syncPrimaryModeUI();
 
     console.log("⟳ Sprint reset");
@@ -2502,11 +2261,7 @@ class SentenceBuilder {
   // ============================================================
 
   clearAllProgress() {
-    if (
-      !confirm(
-        "⚠️ This will delete ALL your progress for ALL sprints. Are you sure?",
-      )
-    ) {
+    if (!confirm('⚠️ This will delete ALL your progress for ALL sprints. Are you sure?')) {
       return;
     }
 
@@ -2515,20 +2270,20 @@ class SentenceBuilder {
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith("sentence_builder_")) {
+        if (key && key.startsWith('sentence_builder_')) {
           keysToRemove.push(key);
         }
       }
 
-      keysToRemove.forEach((key) => localStorage.removeItem(key));
+      keysToRemove.forEach(key => localStorage.removeItem(key));
 
       console.log(`🗑️ Cleared ${keysToRemove.length} progress items`);
 
       // Reload the page to start fresh
       location.reload();
     } catch (error) {
-      console.error("Error clearing progress:", error);
-      alert("Failed to clear progress. Please try again.");
+      console.error('Error clearing progress:', error);
+      alert('Failed to clear progress. Please try again.');
     }
   }
 
@@ -2542,40 +2297,26 @@ class SentenceBuilder {
       return;
     }
 
-    // Check if mode can be changed
-    if (!this.mastery.canChangePrimaryMode()) {
-      const modeLabels = {
-        fill: "📝 Fill",
-        order: "🔄 Order",
-        "select-order": "🎯 Select",
-      };
-      const currentLabel = modeLabels[this.mastery.primaryMode] || this.mastery.primaryMode;
-      alert(`🔒 Cannot change mastery mode mid-sprint!\n\nYou have progress in ${currentLabel} mode.\n\nComplete the sprint or use "Reset Mastery Progress" to switch.`);
-      return;
-    }
-
     console.log(
       `🎯 Changing primary mode from ${this.mastery.primaryMode} to ${mode}`,
     );
 
-    const success = this.mastery.setPrimaryMode(mode, this.mode);
-    if (success) {
-      this.mastery.save();
-      this.syncPrimaryModeUI();
-      this.updateStats();
-      this.syncModeUI();
+    this.mastery.setPrimaryMode(mode, this.mode);
+    this.mastery.save();
 
-      // Reload current sentence to refresh
-      if (this.currentSentence) {
-        this.preparePuzzle();
-        this.renderSentence();
-        this.renderWordBank();
-        this.hideFeedback();
-        this.updateSubmitButton();
-      }
+    this.syncPrimaryModeUI();
+    this.updateStats();
 
-      console.log(`✅ Primary mode changed to: ${mode}`);
+    // Reload current sentence to refresh
+    if (this.currentSentence) {
+      this.preparePuzzle();
+      this.renderSentence();
+      this.renderWordBank();
+      this.hideFeedback();
+      this.updateSubmitButton();
     }
+
+    console.log(`✅ Primary mode changed to: ${mode}`);
   }
 
   // ============================================================
@@ -2592,26 +2333,6 @@ class SentenceBuilder {
 
     if (this.mode === mode) {
       console.log(`ℹ️ Already in ${mode} mode`);
-      return;
-    }
-
-    // Check if mode is locked (mastery in progress, trying to switch to non-mastery mode)
-    const progress = this.mastery.getProgress();
-    if (progress.isLocked && mode !== this.mastery.primaryMode) {
-      const modeLabels = {
-        fill: "📝 Fill",
-        order: "🔄 Order",
-        "select-order": "🎯 Select",
-      };
-      const primaryLabel = modeLabels[this.mastery.primaryMode] || this.mastery.primaryMode;
-      const targetLabel = modeLabels[mode] || mode;
-      console.warn(`⚠️ Cannot switch to ${targetLabel} mode. Complete ${primaryLabel} mastery first!`);
-      this.elements.sentenceHint.textContent = `🔒 Cannot switch to ${targetLabel} mode. Complete ${primaryLabel} mastery first! (${progress.mastered}/${progress.total})`;
-      this.elements.sentenceHint.style.color = "#b34a4a";
-      // Flash the hint to draw attention
-      setTimeout(() => {
-        this.renderTranslationAndHint(this.elements.sentenceEn);
-      }, 3000);
       return;
     }
 
@@ -2769,13 +2490,6 @@ class SentenceBuilder {
       });
     }
 
-    // Reset Mastery Progress button
-    if (this.elements.resetMasteryBtn) {
-      this.elements.resetMasteryBtn.addEventListener("click", () => {
-        this.resetMasteryProgress();
-      });
-    }
-
     this.elements.submitBtn.addEventListener("click", this.submitAnswer);
     this.elements.resetBtn.addEventListener("click", this.resetSprint);
     this.elements.sentenceTtsBtn.addEventListener("click", this.speakSentence);
@@ -2908,10 +2622,6 @@ class SentenceBuilder {
         this.resetSprint();
         console.log("⟳ Sprint reset");
       },
-      resetMastery: () => {
-        this.resetMasteryProgress();
-        console.log("⟳ Mastery progress reset");
-      },
       setMode: (mode) => {
         this.setMode(mode);
         console.log(`🔄 Switched to ${mode} mode`);
@@ -2929,7 +2639,6 @@ class SentenceBuilder {
           total: progress.total,
           mastered: progress.mastered,
           progress: progress.progress,
-          isLocked: progress.isLocked,
           mode: this.mode,
           primaryMode: modeStatus.primaryMode,
           isPracticeMode: modeStatus.isPracticeMode,
@@ -2944,7 +2653,6 @@ class SentenceBuilder {
     console.log("  - masterAll()        → Mark all as mastered");
     console.log("  - completeSprint()   → Auto-complete sprint");
     console.log("  - resetSprint()      → Reset sprint");
-    console.log("  - resetMastery()     → Reset mastery progress only");
     console.log("  - setMode(mode)      → Switch modes (fill/order/select-order)");
     console.log("  - setPrimaryMode(mode) → Set mastery mode");
     console.log("  - state()            → Show current state");
@@ -2968,7 +2676,7 @@ class SentenceBuilder {
     this.mastery.stats.correct = total;
     this.mastery.stats.incorrect = 0;
     this.mastery.stats.attempts = total;
-
+    
     this.sprintSentences.forEach((s) => {
       this.mastery.stats.sentenceAttempts[s.index] = 1;
       this.mastery.stats.sentenceCorrect[s.index] = true;
@@ -2976,7 +2684,6 @@ class SentenceBuilder {
 
     this.mastery.allCompleted = true;
     this.mastery.completionShown = false;
-    this.mastery.isPracticeMode = true;
 
     this.mastery.save();
     this.updateStats();
@@ -3065,8 +2772,6 @@ class SentenceBuilder {
     console.log("Failed:", this.mastery.getFailedCount());
     console.log("Cycle:", stats.cycleNumber);
     console.log("All completed:", this.mastery.allCompleted);
-    console.log("Locked:", progress.isLocked);
-    console.log("Practice mode:", this.mastery.isPracticeMode);
     console.log("Stats:", stats);
     console.log("Current sentence:", this.currentSentenceIndex);
     console.log("Show furigana:", this.showFurigana);
