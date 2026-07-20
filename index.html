@@ -179,6 +179,48 @@
       }
 
       /* ============================================================
+         MASTERY SELECTOR - NEW
+         ============================================================ */
+      .mastery-selector {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: 4px;
+      }
+
+      .mastery-selector .mastery-label {
+        font-size: 0.65rem;
+        color: #070707;
+        margin-right: 2px;
+      }
+
+      .mastery-selector select {
+        font-size: 0.65rem;
+        padding: 3px 8px;
+        border-radius: 30px;
+        border: 1px solid #d4c9b8;
+        background: #ffffff;
+        cursor: pointer;
+        font-family: inherit;
+        transition: 0.15s;
+      }
+
+      .mastery-selector select:hover {
+        background: #f0ebe3;
+      }
+
+      #modeStatus {
+        font-size: 0.65rem;
+        padding: 2px 10px;
+        border-radius: 12px;
+        background: #eaf5ea;
+        color: #2d7a4a;
+        border: 1px solid #5a8a6a;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+      }
+
+      /* ============================================================
          PROGRESS SECTION - stats and progress bar
          ============================================================ */
       .progress-section {
@@ -1050,6 +1092,19 @@
         .select-mode-instruction {
           font-size: 0.75rem; /* CHANGE: Mobile select instruction size */
         }
+
+        /* Mastery selector mobile */
+        .mastery-selector .mastery-label {
+          font-size: 0.55rem;
+        }
+        .mastery-selector select {
+          font-size: 0.55rem;
+          padding: 2px 6px;
+        }
+        #modeStatus {
+          font-size: 0.55rem;
+          padding: 2px 8px;
+        }
       }
 
       /* ============================================================
@@ -1198,6 +1253,19 @@
           font-size: 0.65rem; /* CHANGE: Small mobile select instruction size */
           padding: 3px 6px;
         }
+
+        /* Mastery selector small mobile */
+        .mastery-selector .mastery-label {
+          font-size: 0.5rem;
+        }
+        .mastery-selector select {
+          font-size: 0.5rem;
+          padding: 2px 5px;
+        }
+        #modeStatus {
+          font-size: 0.5rem;
+          padding: 2px 6px;
+        }
       }
 
       /* ============================================================
@@ -1248,6 +1316,17 @@
             <button class="mode-btn active" data-mode="fill">📝 Fill</button>
             <button class="mode-btn" data-mode="order">🔄 Order</button>
             <button class="mode-btn" data-mode="select-order">🎯 Select</button>
+          </div>
+
+          <!-- ===== NEW: MASTERY SELECTOR ===== -->
+          <div class="mastery-selector">
+            <span class="mastery-label">Mastery:</span>
+            <select id="primaryModeSelect">
+              <option value="fill">📝 Fill</option>
+              <option value="order">🔄 Order</option>
+              <option value="select-order">🎯 Select</option>
+            </select>
+            <span id="modeStatus">📊 Mastery: Fill</span>
           </div>
 
           <span style="font-size: 0.65rem; color: #7a6f60">Speed:</span>
@@ -1385,6 +1464,7 @@
     <script src="js/data/wordDict.js"></script>
     <script src="js/utils/furigana.js"></script>
     <script src="js/modules/audio.js"></script>
+    <script src="js/managers/masteryManager.js"></script>
     <script src="js/modules/sentenceBuilder.js"></script>
 
     <script>

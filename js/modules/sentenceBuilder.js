@@ -1,5 +1,6 @@
 // ============================================================
 // SENTENCE BUILDER - Core Logic (3 Modes)
+// Now using MasteryManager for stats/progress
 // ============================================================
 
 /**
@@ -12,11 +13,8 @@ class SentenceBuilder {
     this.activeSprintIndex = 0;
     this.sprintSentences = [];
 
-    this.masteredIndices = new Set();
-    this.failedIndices = new Set();
-    this.currentCycleSentences = [];
-    this.cycleNumber = 1;
-    this.allCompleted = false;
+    // Mastery Manager handles all stats/progress
+    this.mastery = new MasteryManager(0);
 
     this.currentSentenceIndex = -1;
     this.currentSentence = null;
@@ -42,13 +40,8 @@ class SentenceBuilder {
     this.correctWordCount = 0;
     this.totalWordBankSize = 0;
 
-    this.stats = {
-      correct: 0,
-      incorrect: 0,
-      attempts: 0,
-      sentenceAttempts: {},
-      sentenceCorrect: {},
-    };
+    // ========== Debug Mode ==========
+    this.debugMode = false;
 
     this.elements = {};
 
@@ -89,8 +82,7 @@ class SentenceBuilder {
     this.showFeedback = this.showFeedback.bind(this);
     this.showFeedbackFillError = this.showFeedbackFillError.bind(this);
     this.showFeedbackOrderError = this.showFeedbackOrderError.bind(this);
-    this.showFeedbackSelectOrderError =
-      this.showFeedbackSelectOrderError.bind(this);
+    this.showFeedbackSelectOrderError = this.showFeedbackSelectOrderError.bind(this);
     this.showCompletion = this.showCompletion.bind(this);
     this.resetSprint = this.resetSprint.bind(this);
     this.toggleFurigana = this.toggleFurigana.bind(this);
@@ -103,7 +95,9 @@ class SentenceBuilder {
     this.getSentenceById = this.getSentenceById.bind(this);
     this.getSprintSentences = this.getSprintSentences.bind(this);
     this.setMode = this.setMode.bind(this);
+    this.changePrimaryMode = this.changePrimaryMode.bind(this);
     this.syncModeUI = this.syncModeUI.bind(this);
+    this.syncPrimaryModeUI = this.syncPrimaryModeUI.bind(this);
     this.calculateDistractors = this.calculateDistractors.bind(this);
     this.generateDistractors = this.generateDistractors.bind(this);
     this.fallbackFurigana = this.fallbackFurigana.bind(this);
@@ -122,6 +116,9 @@ class SentenceBuilder {
     this.shuffleArray = this.shuffleArray.bind(this);
     this.buildDisplayWord = this.buildDisplayWord.bind(this);
     this.setupEventListeners = this.setupEventListeners.bind(this);
+    this.setupDebugMode = this.setupDebugMode.bind(this);
+    this.exposeTestHelpers = this.exposeTestHelpers.bind(this);
+    this.autoCompleteSprint = this.autoCompleteSprint.bind(this);
     this.debug = this.debug.bind(this);
     // Helper to reduce duplication
     this.buildCorrectSentenceHTML = this.buildCorrectSentenceHTML.bind(this);
@@ -180,6 +177,8 @@ class SentenceBuilder {
     this.populateSprintSelector();
     this.loadProgress();
     this.setupEventListeners();
+    this.setupDebugMode();
+    this.exposeTestHelpers();
     this.syncModeUI();
 
     if (this.sprints.length > 0) {
@@ -237,6 +236,41 @@ class SentenceBuilder {
       btn.style.borderColor = isActive ? "#4a7a5a" : "#d4c9b8";
     });
     console.log(`🎯 UI synced to mode: ${this.mode}`);
+  }
+
+  syncPrimaryModeUI() {
+    const select = document.getElementById("primaryModeSelect");
+    if (select) {
+      select.value = this.mastery.primaryMode || "fill";
+    }
+
+    const statusEl = document.getElementById("modeStatus");
+    if (!statusEl) return;
+
+    const modeLabels = {
+      fill: "📝 Fill",
+      order: "🔄 Order",
+      "select-order": "🎯 Select",
+    };
+    const label = modeLabels[this.mastery.primaryMode] || "Fill";
+
+    if (this.mastery.isPracticeMode) {
+      statusEl.textContent = `🔧 Practice (Mastery: ${label})`;
+      statusEl.style.background = "#f0ebe3";
+      statusEl.style.color = "#7a6f60";
+      statusEl.style.border = "1px solid #d4c9b8";
+      statusEl.style.padding = "2px 10px";
+      statusEl.style.borderRadius = "12px";
+      statusEl.style.fontSize = "0.65rem";
+    } else {
+      statusEl.textContent = `📊 Mastery: ${label}`;
+      statusEl.style.background = "#eaf5ea";
+      statusEl.style.color = "#2d7a4a";
+      statusEl.style.border = "1px solid #5a8a6a";
+      statusEl.style.padding = "2px 10px";
+      statusEl.style.borderRadius = "12px";
+      statusEl.style.fontSize = "0.65rem";
+    }
   }
 
   // ============================================================
@@ -344,28 +378,19 @@ class SentenceBuilder {
       return;
     }
 
-    this.masteredIndices = new Set();
-    this.failedIndices = new Set();
-    this.currentCycleSentences = [];
-    this.cycleNumber = 1;
-    this.allCompleted = false;
+    // Initialize mastery manager
+    this.mastery.init(sprintIndex, this.sprintSentences.length, "fill");
 
-    this.stats = {
-      correct: 0,
-      incorrect: 0,
-      attempts: 0,
-      sentenceAttempts: {},
-      sentenceCorrect: {},
-    };
-
-    this.currentCycleSentences = this.sprintSentences.map((s) => s.index);
-    this.shuffleArray(this.currentCycleSentences);
+    // Update practice mode status
+    this.mastery.updatePracticeMode(this.mode);
+    this.mastery.save();
 
     this.elements.sprintSelect.value = sprintIndex;
     this.elements.completionOverlay.classList.remove("visible");
     this.hideFeedback();
 
     this.syncModeUI();
+    this.syncPrimaryModeUI();
     this.loadNextSentence();
     this.updateStats();
 
@@ -375,36 +400,78 @@ class SentenceBuilder {
   }
 
   // ============================================================
-  // SENTENCE LOADING
+  // SENTENCE LOADING - FIXED
   // ============================================================
 
   loadNextSentence() {
-    if (this.masteredIndices.size === this.sprintSentences.length) {
-      this.allCompleted = true;
-      this.showCompletion();
+    // Check if sprint is complete
+    if (this.mastery.allCompleted) {
+      // In practice mode, cycle through sentences for practice
+      if (this.mastery.isPracticeMode) {
+        // Get the next sentence in the sprint (cycling)
+        const totalSentences = this.sprintSentences.length;
+        let nextIndex = this.currentSentenceIndex;
+        
+        // Find the next index (cycling forward)
+        let found = false;
+        for (let i = 0; i < totalSentences; i++) {
+          nextIndex = (nextIndex + 1) % totalSentences;
+          // Check if this sentence exists
+          const data = this.getData();
+          if (data && data[nextIndex]) {
+            found = true;
+            break;
+          }
+        }
+        
+        if (found) {
+          this.currentSentenceIndex = nextIndex;
+          this.currentSentence = this.getData()[nextIndex];
+          this.preparePuzzle();
+          this.renderSentence();
+          this.renderWordBank();
+          this.updateStats();
+          this.hideFeedback();
+          this.updateSubmitButton();
+          this.elements.sentenceHint.textContent = 
+            `💡 Practice mode (${this.mode}). Try the next sentence!`;
+          this.elements.sentenceHint.style.color = "#7a6f60";
+          return;
+        }
+      }
+      
+      // If completion overlay hasn't been shown, show it
+      if (this.mastery.shouldShowCompletion()) {
+        this.showCompletion();
+        this.mastery.markCompletionShown();
+        this.mastery.save();
+      } else {
+        // Already shown completion, allow practice
+        this.elements.sentenceHint.textContent =
+          "💡 Sprint complete! Try different modes for more practice.";
+        this.elements.sentenceHint.style.color = "#7a6f60";
+      }
       return;
     }
 
-    if (this.currentCycleSentences.length === 0) {
-      if (this.failedIndices.size === 0) {
-        this.allCompleted = true;
-        this.showCompletion();
-        return;
-      }
+    // Get next sentence from mastery manager (normal mode)
+    const sentenceIndex = this.mastery.getNextSentence();
 
-      this.currentCycleSentences = Array.from(this.failedIndices);
-      this.failedIndices = new Set();
-      this.cycleNumber++;
-      this.shuffleArray(this.currentCycleSentences);
-      console.log(
-        `🔄 Starting cycle ${this.cycleNumber} with ${this.currentCycleSentences.length} sentences`,
-      );
+    if (sentenceIndex === null) {
+      // No more sentences, check completion
+      if (this.mastery.checkCompletion()) {
+        if (this.mastery.shouldShowCompletion()) {
+          this.showCompletion();
+          this.mastery.markCompletionShown();
+          this.mastery.save();
+        }
+      }
+      return;
     }
 
-    const sentenceIndex = this.currentCycleSentences.shift();
+    // Load the sentence
     const data = this.getData();
-    const sentenceData =
-      data && data[sentenceIndex] ? data[sentenceIndex] : null;
+    const sentenceData = data && data[sentenceIndex] ? data[sentenceIndex] : null;
 
     if (!sentenceData) {
       console.error(`❌ Sentence at index ${sentenceIndex} not found`);
@@ -668,11 +735,6 @@ class SentenceBuilder {
     if (totalWords <= 10) return 3;
     return 3;
   }
-
-  // ============================================================
-  // GENERATE DISTRACTORS - Option 2: Only Hiragana words
-  // (Commented out - uncomment to use instead of Option 1)
-  // ============================================================
 
   generateDistractors(count) {
     const allWords = [];
@@ -1080,8 +1142,18 @@ class SentenceBuilder {
       enContainer.classList.remove("visible");
     }
 
-    this.elements.sentenceHint.textContent =
-      this.currentSentence.grammarHint || "";
+    // Update hint based on mode status
+    const modeStatus = this.mastery.getModeStatus();
+    if (modeStatus.isPracticeMode) {
+      this.elements.sentenceHint.textContent =
+        `💡 Practice mode (${this.mode}). Mastery tracked in ${modeStatus.primaryMode} mode.`;
+      this.elements.sentenceHint.style.color = "#7a6f60";
+    } else if (!this.mastery.allCompleted) {
+      this.elements.sentenceHint.textContent =
+        `📊 Mastery mode — your progress counts! (${modeStatus.primaryMode})`;
+      this.elements.sentenceHint.style.color = "#2d7a4a";
+    }
+
     this.updateSubmitButton();
   }
 
@@ -1239,8 +1311,8 @@ class SentenceBuilder {
     );
     const isSubmitting = this.isSubmitting;
 
-    this.elements.submitBtn.disabled =
-      !allFilled || isSubmitting || this.allCompleted;
+    // Only disable if not filled or submitting (allow practice even when allCompleted)
+    this.elements.submitBtn.disabled = !allFilled || isSubmitting;
 
     if (isSubmitting) {
       this.elements.submitBtn.textContent = "⏳ Checking...";
@@ -1254,7 +1326,7 @@ class SentenceBuilder {
   // ============================================================
 
   selectWord(index) {
-    if (this.isSubmitting || this.allCompleted) return;
+    if (this.isSubmitting) return;
     if (index < 0 || index >= this.wordBank.length) return;
     if (this.wordBank[index].used) return;
 
@@ -1299,7 +1371,7 @@ class SentenceBuilder {
   }
 
   placeWordFill(blankIndex) {
-    if (this.isSubmitting || this.allCompleted) return;
+    if (this.isSubmitting) return;
     if (this.selectedWordIndex === null) return;
     if (this.placements[blankIndex] !== null) return;
 
@@ -1317,7 +1389,7 @@ class SentenceBuilder {
   }
 
   placeWordOrder(blankIndex) {
-    if (this.isSubmitting || this.allCompleted) return;
+    if (this.isSubmitting) return;
     if (this.selectedWordIndex === null) return;
     if (this.placements[blankIndex] !== null) return;
 
@@ -1336,7 +1408,7 @@ class SentenceBuilder {
   }
 
   placeWordSelectOrder(blankIndex) {
-    if (this.isSubmitting || this.allCompleted) return;
+    if (this.isSubmitting) return;
     if (this.selectedWordIndex === null) return;
     if (this.placements[blankIndex] !== null) return;
 
@@ -1367,7 +1439,7 @@ class SentenceBuilder {
   }
 
   removeWordFill(blankIndex) {
-    if (this.isSubmitting || this.allCompleted) return;
+    if (this.isSubmitting) return;
     if (this.placements[blankIndex] === null) return;
 
     const wordIndex = this.placements[blankIndex];
@@ -1380,7 +1452,7 @@ class SentenceBuilder {
   }
 
   removeWordOrder(blankIndex) {
-    if (this.isSubmitting || this.allCompleted) return;
+    if (this.isSubmitting) return;
     if (this.placements[blankIndex] === null) return;
 
     const wordIndex = this.placements[blankIndex];
@@ -1395,7 +1467,7 @@ class SentenceBuilder {
   }
 
   removeWordSelectOrder(blankIndex) {
-    if (this.isSubmitting || this.allCompleted) return;
+    if (this.isSubmitting) return;
     if (this.placements[blankIndex] === null) return;
 
     const wordIndex = this.placements[blankIndex];
@@ -1412,7 +1484,7 @@ class SentenceBuilder {
   // ============================================================
 
   submitAnswer() {
-    if (this.isSubmitting || this.allCompleted) return;
+    if (this.isSubmitting) return;
 
     switch (this.mode) {
       case "order":
@@ -1441,7 +1513,57 @@ class SentenceBuilder {
     const results = this.validatePlacementsFill();
     const allCorrect = results.every((r) => r.correct);
 
-    this.updateStatsAndFeedback(allCorrect, results);
+    // Track in mastery manager (ONLY if not in practice mode)
+    if (!this.mastery.isPracticeMode) {
+      this.mastery.trackAttempt(
+        this.currentSentenceIndex,
+        allCorrect,
+        this.mode,
+      );
+      this.mastery.save();
+    }
+
+    // Show feedback
+    if (allCorrect) {
+      this.showFeedback(true);
+      this.isSubmitted = true;
+      this.isSubmitting = false;
+      this.updateSubmitButton();
+      this.updateStats();
+
+      // If in practice mode, don't auto-advance
+      if (this.mastery.isPracticeMode) {
+        setTimeout(() => {
+          this.isSubmitted = false;
+          this.updateSubmitButton();
+          this.renderSentence();
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          this.loadNextSentence();
+        }, 1500);
+      }
+    } else {
+      this.showFeedback(false, results);
+      this.isSubmitted = true;
+      this.isSubmitting = false;
+      this.updateSubmitButton();
+      this.updateStats();
+
+      // In practice mode, allow user to continue after seeing feedback
+      if (this.mastery.isPracticeMode) {
+        this.elements.sentenceHint.textContent = 
+          `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
+        this.elements.sentenceHint.style.color = "#7a6f60";
+      } else {
+        // In mastery mode, allow retry
+        setTimeout(() => {
+          this.isSubmitted = false;
+          this.updateSubmitButton();
+        }, 2000);
+      }
+    }
+
     this.renderSentence();
   }
 
@@ -1474,7 +1596,55 @@ class SentenceBuilder {
     this.updateSubmitButton();
 
     const { results, allCorrect } = this.validateOrder();
-    this.updateStatsAndFeedback(allCorrect, results);
+
+    // Track in mastery manager (ONLY if not in practice mode)
+    if (!this.mastery.isPracticeMode) {
+      this.mastery.trackAttempt(
+        this.currentSentenceIndex,
+        allCorrect,
+        this.mode,
+      );
+      this.mastery.save();
+    }
+
+    if (allCorrect) {
+      this.showFeedback(true);
+      this.isSubmitted = true;
+      this.isSubmitting = false;
+      this.updateSubmitButton();
+      this.updateStats();
+
+      if (this.mastery.isPracticeMode) {
+        setTimeout(() => {
+          this.isSubmitted = false;
+          this.updateSubmitButton();
+          this.renderSentenceOrder();
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          this.loadNextSentence();
+        }, 1500);
+      }
+    } else {
+      this.showFeedback(false, results);
+      this.isSubmitted = true;
+      this.isSubmitting = false;
+      this.updateSubmitButton();
+      this.updateStats();
+
+      // In practice mode, allow user to continue
+      if (this.mastery.isPracticeMode) {
+        this.elements.sentenceHint.textContent = 
+          `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
+        this.elements.sentenceHint.style.color = "#7a6f60";
+      } else {
+        setTimeout(() => {
+          this.isSubmitted = false;
+          this.updateSubmitButton();
+        }, 2000);
+      }
+    }
+
     this.renderSentenceOrder();
   }
 
@@ -1514,7 +1684,55 @@ class SentenceBuilder {
     this.updateSubmitButton();
 
     const { results, allCorrect } = this.validateSelectOrder();
-    this.updateStatsAndFeedback(allCorrect, results);
+
+    // Track in mastery manager (ONLY if not in practice mode)
+    if (!this.mastery.isPracticeMode) {
+      this.mastery.trackAttempt(
+        this.currentSentenceIndex,
+        allCorrect,
+        this.mode,
+      );
+      this.mastery.save();
+    }
+
+    if (allCorrect) {
+      this.showFeedback(true);
+      this.isSubmitted = true;
+      this.isSubmitting = false;
+      this.updateSubmitButton();
+      this.updateStats();
+
+      if (this.mastery.isPracticeMode) {
+        setTimeout(() => {
+          this.isSubmitted = false;
+          this.updateSubmitButton();
+          this.renderSentenceSelectOrder();
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          this.loadNextSentence();
+        }, 1500);
+      }
+    } else {
+      this.showFeedback(false, results);
+      this.isSubmitted = true;
+      this.isSubmitting = false;
+      this.updateSubmitButton();
+      this.updateStats();
+
+      // In practice mode, allow user to continue
+      if (this.mastery.isPracticeMode) {
+        this.elements.sentenceHint.textContent = 
+          `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
+        this.elements.sentenceHint.style.color = "#7a6f60";
+      } else {
+        setTimeout(() => {
+          this.isSubmitted = false;
+          this.updateSubmitButton();
+        }, 2000);
+      }
+    }
+
     this.renderSentenceSelectOrder();
   }
 
@@ -1607,42 +1825,9 @@ class SentenceBuilder {
   // ============================================================
 
   updateStatsAndFeedback(allCorrect, results) {
-    this.stats.attempts++;
-    if (!this.stats.sentenceAttempts[this.currentSentenceIndex]) {
-      this.stats.sentenceAttempts[this.currentSentenceIndex] = 0;
-    }
-    this.stats.sentenceAttempts[this.currentSentenceIndex]++;
-
-    if (allCorrect) {
-      this.stats.correct++;
-      this.stats.sentenceCorrect[this.currentSentenceIndex] = true;
-      this.masteredIndices.add(this.currentSentenceIndex);
-      this.failedIndices.delete(this.currentSentenceIndex);
-
-      this.showFeedback(true);
-      this.isSubmitted = true;
-      this.isSubmitting = false;
-      this.updateSubmitButton();
-
-      this.saveProgress();
-
-      setTimeout(() => {
-        this.loadNextSentence();
-      }, 1500);
-    } else {
-      this.stats.incorrect++;
-      this.stats.sentenceCorrect[this.currentSentenceIndex] = false;
-      this.failedIndices.add(this.currentSentenceIndex);
-
-      this.showFeedback(false, results);
-      this.isSubmitted = true;
-      this.isSubmitting = false;
-      this.updateSubmitButton();
-
-      this.saveProgress();
-    }
-
-    this.updateStats();
+    // This is now handled in the individual submit methods
+    // Kept for compatibility but not used
+    console.log("updateStatsAndFeedback called - use submit methods instead");
   }
 
   // ============================================================
@@ -1700,18 +1885,21 @@ class SentenceBuilder {
     area.classList.add(isCorrect ? "success" : "error");
 
     if (isCorrect) {
+      const practiceNote = this.mastery.isPracticeMode
+        ? " (Practice mode)"
+        : "";
       const messages = {
-        "select-order": "✅ Perfect! Correct words in the right order! 🎉",
-        order: "✅ Perfect order! Well done! 🎉",
-        default: "✅ Correct! Well done!",
+        "select-order": `✅ Perfect! Correct words in the right order! 🎉${practiceNote}`,
+        order: `✅ Perfect order! Well done! 🎉${practiceNote}`,
+        default: `✅ Correct! Well done!${practiceNote}`,
       };
       title.textContent = messages[this.mode] || messages.default;
       detail.innerHTML =
         this.mode === "select-order"
-          ? "You selected the right words and arranged them perfectly!"
+          ? `You selected the right words and arranged them perfectly!${this.mastery.isPracticeMode ? " (Practice mode — stats not tracked)" : ""}`
           : this.mode === "order"
-            ? "You arranged all the words correctly!"
-            : "You placed all the words correctly!";
+            ? `You arranged all the words correctly!${this.mastery.isPracticeMode ? " (Practice mode — stats not tracked)" : ""}`
+            : `You placed all the words correctly!${this.mastery.isPracticeMode ? " (Practice mode — stats not tracked)" : ""}`;
     } else {
       switch (this.mode) {
         case "select-order":
@@ -1869,7 +2057,7 @@ class SentenceBuilder {
   }
 
   // ============================================================
-  // ADD FEEDBACK BUTTONS - FIXED WITH TTS
+  // ADD FEEDBACK BUTTONS - FIXED
   // ============================================================
 
   addFeedbackButtons() {
@@ -1900,13 +2088,18 @@ class SentenceBuilder {
       });
     }
 
-    // Next Sentence button
+    // Next Sentence button - FIXED
     const nextBtn = document.getElementById("nextAfterWrongBtn");
     if (nextBtn) {
       const newNextBtn = nextBtn.cloneNode(true);
       nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
 
       newNextBtn.addEventListener("click", () => {
+        // Reset submission state before loading next
+        this.isSubmitted = false;
+        this.isSubmitting = false;
+        this.updateSubmitButton();
+        this.hideFeedback();
         this.loadNextSentence();
       });
     }
@@ -1932,22 +2125,59 @@ class SentenceBuilder {
   }
 
   // ============================================================
-  // COMPLETION
+  // COMPLETION - FIXED
   // ============================================================
 
   showCompletion() {
     const overlay = this.elements.completionOverlay;
     overlay.classList.add("visible");
 
-    this.elements.compCorrect.textContent = this.stats.correct;
-    this.elements.compIncorrect.textContent = this.stats.incorrect;
-    this.elements.compAttempts.textContent = this.stats.attempts;
-    this.elements.compCycles.textContent = this.cycleNumber;
+    const stats = this.mastery.getStats();
+    const progress = this.mastery.getProgress();
+    const modeStatus = this.mastery.getModeStatus();
+
+    const modeLabel =
+      modeStatus.primaryMode === "fill"
+        ? "📝 Fill"
+        : modeStatus.primaryMode === "order"
+          ? "🔄 Order"
+          : "🎯 Select";
+
+    // Build the completion stats HTML cleanly
+    let statsHtml = `
+      <p style="color:#5a8a6a;font-weight:500;font-size:1.1rem;">🏆 Mastered in ${modeLabel} mode!</p>
+      <p style="color:#3d352b;margin-top:8px;">You've mastered all sentences in this sprint!</p>
+      <p style="margin-top:12px;">✅ Correct: <span class="highlight-num">${stats.correct}</span></p>
+      <p>❌ Incorrect: <span class="highlight-num">${stats.incorrect}</span></p>
+      <p>📝 Total attempts: <span class="highlight-num">${stats.attempts}</span></p>
+      <p>🔄 Cycles: <span class="highlight-num">${stats.cycleNumber}</span></p>
+    `;
+
+    // Add practice mode info if applicable
+    if (modeStatus.isPracticeMode) {
+      const modeLabels = {
+        fill: "📝 Fill",
+        order: "🔄 Order",
+        "select-order": "🎯 Select",
+      };
+      const currentModeLabel = modeLabels[this.mode] || this.mode;
+      const primaryModeLabel = modeLabels[modeStatus.primaryMode] || modeStatus.primaryMode;
+      
+      statsHtml += `
+        <p style="color:#7a6f60;font-size:0.85rem;margin-top:12px;padding:8px 12px;background:#f5f0eb;border-radius:8px;border-left:3px solid #b8a58b;">
+          💡 You were practicing in <strong>${currentModeLabel}</strong> mode. 
+          Mastery is tracked in <strong>${primaryModeLabel}</strong> mode.
+        </p>
+      `;
+    }
+
+    // Replace the entire content
+    this.elements.completionStats.innerHTML = statsHtml;
 
     this.elements.submitBtn.disabled = true;
     this.elements.sentenceTtsBtn.disabled = true;
 
-    console.log("🎉 Sprint complete!");
+    console.log(`🎉 Sprint complete! (${modeLabel} mode)`);
   }
 
   // ============================================================
@@ -1955,71 +2185,51 @@ class SentenceBuilder {
   // ============================================================
 
   updateStats() {
-    const total = this.sprintSentences.length;
-    const mastered = this.masteredIndices.size;
-    const progress = total > 0 ? (mastered / total) * 100 : 0;
+    const progress = this.mastery.getProgress();
+    const stats = this.mastery.getStats();
+    const modeStatus = this.mastery.getModeStatus();
 
-    this.elements.progressBar.style.width = `${progress}%`;
-    this.elements.progressText.textContent = `${mastered} / ${total} mastered`;
-    this.elements.progressPercent.textContent = `${Math.round(progress)}%`;
+    // Update progress bar
+    this.elements.progressBar.style.width = `${progress.progress}%`;
 
-    this.elements.correctCount.textContent = this.stats.correct;
-    this.elements.incorrectCount.textContent = this.stats.incorrect;
-    this.elements.attemptsCount.textContent = this.stats.attempts;
-    this.elements.cycleCount.textContent = this.cycleNumber;
-    this.elements.masteredCount.textContent = mastered;
-  }
+    // Update progress text with mode context
+    const modeLabel =
+      modeStatus.primaryMode === "fill"
+        ? "📝 Fill"
+        : modeStatus.primaryMode === "order"
+          ? "🔄 Order"
+          : "🎯 Select";
 
-  saveProgress() {
-    try {
-      const key = `sentence_builder_${this.activeSprintIndex}`;
-      const data = {
-        masteredIndices: Array.from(this.masteredIndices),
-        failedIndices: Array.from(this.failedIndices),
-        currentCycleSentences: this.currentCycleSentences,
-        cycleNumber: this.cycleNumber,
-        allCompleted: this.allCompleted,
-        stats: this.stats,
-        mode: this.mode,
-      };
-      localStorage.setItem(key, JSON.stringify(data));
-      console.log("💾 Progress saved for sprint", this.activeSprintIndex);
-    } catch (error) {
-      console.error("❌ Error saving progress:", error);
+    let progressText = `${progress.mastered} / ${progress.total} mastered (${modeLabel})`;
+    if (modeStatus.isPracticeMode) {
+      progressText += ` | 🏋️ Practicing: ${this.mode}`;
     }
-  }
+    this.elements.progressText.textContent = progressText;
+    this.elements.progressPercent.textContent = `${Math.round(progress.progress)}%`;
 
-  loadProgress() {
-    try {
-      const key = `sentence_builder_${this.activeSprintIndex || 0}`;
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        const data = JSON.parse(stored);
-        this.masteredIndices = new Set(data.masteredIndices || []);
-        this.failedIndices = new Set(data.failedIndices || []);
-        this.currentCycleSentences = data.currentCycleSentences || [];
-        this.cycleNumber = data.cycleNumber || 1;
-        this.allCompleted = data.allCompleted || false;
-        this.stats = data.stats || {
-          correct: 0,
-          incorrect: 0,
-          attempts: 0,
-          sentenceAttempts: {},
-          sentenceCorrect: {},
-        };
+    // Update stats
+    this.elements.correctCount.textContent = stats.correct;
+    this.elements.incorrectCount.textContent = stats.incorrect;
+    this.elements.attemptsCount.textContent = stats.attempts;
+    this.elements.cycleCount.textContent = stats.cycleNumber;
+    this.elements.masteredCount.textContent = progress.mastered;
 
-        this.mode =
-          data.mode && this.validModes.includes(data.mode) ? data.mode : "fill";
-        console.log(
-          `📂 Progress loaded for sprint ${this.activeSprintIndex}, mode: ${this.mode}`,
-        );
-      } else {
-        this.mode = "fill";
-        console.log(`📂 No saved progress, defaulting to: ${this.mode}`);
-      }
-    } catch (error) {
-      console.error("❌ Error loading progress:", error);
-      this.mode = "fill";
+    // Visual indicator for practice mode
+    if (modeStatus.isPracticeMode) {
+      this.elements.masteredCount.style.color = "#b8a58b";
+    } else {
+      this.elements.masteredCount.style.color = "";
+    }
+
+    // Show mode status in hint
+    if (modeStatus.isPracticeMode) {
+      this.elements.sentenceHint.textContent =
+        `💡 Practice mode (${this.mode}). Mastery tracked in ${modeStatus.primaryMode} mode.`;
+      this.elements.sentenceHint.style.color = "#7a6f60";
+    } else if (!this.mastery.allCompleted) {
+      this.elements.sentenceHint.textContent =
+        `📊 Mastery mode — your progress counts! (${modeStatus.primaryMode})`;
+      this.elements.sentenceHint.style.color = "#2d7a4a";
     }
   }
 
@@ -2028,72 +2238,52 @@ class SentenceBuilder {
   // ============================================================
 
   resetSprint() {
-    if (this.allCompleted) {
-      this.elements.completionOverlay.classList.remove("visible");
-    }
+    // Reset mastery manager (keep primary mode)
+    this.mastery.reset(true);
+    this.mastery.save();
 
-    this.masteredIndices = new Set();
-    this.failedIndices = new Set();
-    this.currentCycleSentences = this.sprintSentences.map((s) => s.index);
-    this.cycleNumber = 1;
-    this.allCompleted = false;
+    // Hide completion overlay
+    this.elements.completionOverlay.classList.remove("visible");
 
-    this.shuffleArray(this.currentCycleSentences);
-
-    this.stats = {
-      correct: 0,
-      incorrect: 0,
-      attempts: 0,
-      sentenceAttempts: {},
-      sentenceCorrect: {},
-    };
-
+    // Reset UI state
     this.hideFeedback();
     this.loadNextSentence();
     this.updateStats();
-    this.saveProgress();
+    this.syncPrimaryModeUI();
 
     console.log("⟳ Sprint reset");
   }
 
   // ============================================================
-  // TOGGLES
+  // PRIMARY MODE MANAGEMENT
   // ============================================================
 
-  toggleFurigana() {
-    this.showFurigana = !this.showFurigana;
-    this.elements.furiganaToggle.textContent = this.showFurigana
-      ? "🔤 ON"
-      : "🔤 OFF";
-    this.elements.furiganaToggle.classList.toggle("active", this.showFurigana);
-    this.renderSentence();
-    this.renderWordBank();
-  }
-
-  toggleTranslation() {
-    this.showTranslation = !this.showTranslation;
-    this.elements.translationToggle.textContent = this.showTranslation
-      ? "📖 Hide Translation"
-      : "📖 Show Translation";
-    this.elements.translationToggle.classList.toggle(
-      "active",
-      this.showTranslation,
-    );
-    this.renderSentence();
-  }
-
-  setSpeed(speed) {
-    this.ttsSpeed = speed;
-
-    document.querySelectorAll(".speed-btn").forEach((el) => {
-      el.classList.toggle("active", parseFloat(el.dataset.speed) === speed);
-    });
-
-    if (typeof audioManager !== "undefined") {
-      audioManager.setSpeed(speed);
+  changePrimaryMode(mode) {
+    if (!this.validModes.includes(mode)) {
+      console.warn(`Invalid primary mode: ${mode}`);
+      return;
     }
 
-    console.log(`🎤 Speed set to ${speed}x`);
+    console.log(
+      `🎯 Changing primary mode from ${this.mastery.primaryMode} to ${mode}`,
+    );
+
+    this.mastery.setPrimaryMode(mode, this.mode);
+    this.mastery.save();
+
+    this.syncPrimaryModeUI();
+    this.updateStats();
+
+    // Reload current sentence to refresh
+    if (this.currentSentence) {
+      this.preparePuzzle();
+      this.renderSentence();
+      this.renderWordBank();
+      this.hideFeedback();
+      this.updateSubmitButton();
+    }
+
+    console.log(`✅ Primary mode changed to: ${mode}`);
   }
 
   // ============================================================
@@ -2116,7 +2306,12 @@ class SentenceBuilder {
     console.log(`🔄 Switching mode from ${this.mode} to ${mode}`);
     this.mode = mode;
 
+    // Update mastery manager's practice mode status
+    this.mastery.updatePracticeMode(mode);
+    this.mastery.save();
+
     this.syncModeUI();
+    this.syncPrimaryModeUI();
 
     if (this.currentSentence) {
       console.log(`🔄 Reloading sentence in ${mode} mode`);
@@ -2128,6 +2323,7 @@ class SentenceBuilder {
       console.log(`✅ Sentence reloaded in ${mode} mode`);
     }
 
+    this.updateStats();
     this.saveProgress();
     console.log(`✅ Mode switched to: ${mode}`);
   }
@@ -2250,6 +2446,17 @@ class SentenceBuilder {
       });
     });
 
+    // Primary mode selector
+    const primaryModeSelect = document.getElementById("primaryModeSelect");
+    if (primaryModeSelect) {
+      primaryModeSelect.addEventListener("change", (e) => {
+        const mode = e.target.value;
+        if (mode && this.validModes.includes(mode)) {
+          this.changePrimaryMode(mode);
+        }
+      });
+    }
+
     this.elements.submitBtn.addEventListener("click", this.submitAnswer);
     this.elements.resetBtn.addEventListener("click", this.resetSprint);
     this.elements.sentenceTtsBtn.addEventListener("click", this.speakSentence);
@@ -2274,6 +2481,232 @@ class SentenceBuilder {
   }
 
   // ============================================================
+  // DEBUG MODE & TEST HELPERS
+  // ============================================================
+
+  setupDebugMode() {
+    document.addEventListener("keydown", (e) => {
+      // Toggle debug mode: Ctrl+Shift+D
+      if (e.ctrlKey && e.shiftKey && e.key === "D") {
+        e.preventDefault();
+        this.debugMode = !this.debugMode;
+        console.log(`🔧 Debug mode: ${this.debugMode ? "ON" : "OFF"}`);
+        this.elements.sentenceHint.textContent = this.debugMode
+          ? "🔧 Debug Mode ON"
+          : "";
+        this.elements.sentenceHint.style.color = this.debugMode
+          ? "#b34a4a"
+          : "";
+        return;
+      }
+
+      if (!this.debugMode) return;
+
+      // Skip sentence: Ctrl+Right
+      if (e.ctrlKey && e.key === "ArrowRight") {
+        e.preventDefault();
+        if (this.currentSentenceIndex !== -1) {
+          this.mastery.masteredIndices.add(this.currentSentenceIndex);
+          this.mastery.save();
+          this.loadNextSentence();
+          this.updateStats();
+          console.log("⏭️ Skipped sentence");
+        }
+      }
+
+      // Mark all mastered: Ctrl+M
+      if (e.ctrlKey && e.key === "m") {
+        e.preventDefault();
+        this.sprintSentences.forEach((s) => {
+          this.mastery.masteredIndices.add(s.index);
+        });
+        this.mastery.save();
+        this.loadNextSentence();
+        this.updateStats();
+        console.log("🏆 All sentences mastered");
+      }
+
+      // Reset sprint: Ctrl+R
+      if (e.ctrlKey && e.key === "r") {
+        e.preventDefault();
+        this.resetSprint();
+        console.log("⟳ Sprint reset");
+      }
+    });
+  }
+
+  exposeTestHelpers() {
+    if (typeof window === "undefined") return;
+
+    window.testHelpers = {
+      masterCurrent: () => {
+        if (this.currentSentenceIndex !== -1) {
+          const idx = this.currentSentenceIndex;
+          this.mastery.masteredIndices.add(idx);
+          // Only increment if not already mastered
+          if (!this.mastery.stats.sentenceCorrect[idx]) {
+            this.mastery.stats.correct++;
+            this.mastery.stats.attempts++;
+            this.mastery.stats.sentenceAttempts[idx] = 1;
+            this.mastery.stats.sentenceCorrect[idx] = true;
+          }
+          this.mastery.save();
+          this.loadNextSentence();
+          this.updateStats();
+          console.log("✅ Marked current sentence as mastered");
+        }
+      },
+      masterAll: () => {
+        const total = this.sprintSentences.length;
+        this.sprintSentences.forEach((s) => {
+          this.mastery.masteredIndices.add(s.index);
+        });
+        // Set stats correctly
+        this.mastery.stats.correct = total;
+        this.mastery.stats.attempts = total;
+        this.sprintSentences.forEach((s) => {
+          this.mastery.stats.sentenceAttempts[s.index] = 1;
+          this.mastery.stats.sentenceCorrect[s.index] = true;
+        });
+        this.mastery.allCompleted = true;
+        this.mastery.completionShown = false;
+        this.mastery.save();
+        this.loadNextSentence();
+        this.updateStats();
+        console.log(`🏆 All ${total} sentences mastered`);
+      },
+      completeSprint: () => {
+        this.autoCompleteSprint();
+      },
+      resetSprint: () => {
+        this.resetSprint();
+        console.log("⟳ Sprint reset");
+      },
+      setMode: (mode) => {
+        this.setMode(mode);
+        console.log(`🔄 Switched to ${mode} mode`);
+      },
+      setPrimaryMode: (mode) => {
+        this.changePrimaryMode(mode);
+        console.log(`🎯 Primary mode set to ${mode}`);
+      },
+      state: () => {
+        const progress = this.mastery.getProgress();
+        const stats = this.mastery.getStats();
+        const modeStatus = this.mastery.getModeStatus();
+        console.log({
+          sprint: this.activeSprintIndex,
+          total: progress.total,
+          mastered: progress.mastered,
+          progress: progress.progress,
+          mode: this.mode,
+          primaryMode: modeStatus.primaryMode,
+          isPracticeMode: modeStatus.isPracticeMode,
+          allCompleted: this.mastery.allCompleted,
+          stats: stats,
+        });
+      },
+    };
+
+    console.log("🧪 Test helpers available: window.testHelpers");
+    console.log("  - masterCurrent()    → Mark current sentence as mastered");
+    console.log("  - masterAll()        → Mark all as mastered");
+    console.log("  - completeSprint()   → Auto-complete sprint");
+    console.log("  - resetSprint()      → Reset sprint");
+    console.log("  - setMode(mode)      → Switch modes (fill/order/select-order)");
+    console.log("  - setPrimaryMode(mode) → Set mastery mode");
+    console.log("  - state()            → Show current state");
+  }
+
+  autoCompleteSprint() {
+    if (!this.sprintSentences || this.sprintSentences.length === 0) {
+      console.warn("No sprint loaded");
+      return;
+    }
+
+    const total = this.sprintSentences.length;
+    console.log(`⚡ Auto-completing ${total} sentences...`);
+
+    // DIRECTLY set mastered indices (no trackAttempt calls)
+    this.sprintSentences.forEach((s) => {
+      this.mastery.masteredIndices.add(s.index);
+    });
+
+    // DIRECTLY set stats (avoid trackAttempt which might double-count)
+    this.mastery.stats.correct = total;
+    this.mastery.stats.incorrect = 0;
+    this.mastery.stats.attempts = total;
+    
+    this.sprintSentences.forEach((s) => {
+      this.mastery.stats.sentenceAttempts[s.index] = 1;
+      this.mastery.stats.sentenceCorrect[s.index] = true;
+    });
+
+    this.mastery.allCompleted = true;
+    this.mastery.completionShown = false;
+
+    this.mastery.save();
+    this.updateStats();
+    this.loadNextSentence();
+
+    console.log(`✅ Sprint auto-completed! (${total} sentences mastered)`);
+  }
+
+  // ============================================================
+  // TOGGLES
+  // ============================================================
+
+  toggleFurigana() {
+    this.showFurigana = !this.showFurigana;
+    this.elements.furiganaToggle.textContent = this.showFurigana
+      ? "🔤 ON"
+      : "🔤 OFF";
+    this.elements.furiganaToggle.classList.toggle("active", this.showFurigana);
+    this.renderSentence();
+    this.renderWordBank();
+  }
+
+  toggleTranslation() {
+    this.showTranslation = !this.showTranslation;
+    this.elements.translationToggle.textContent = this.showTranslation
+      ? "📖 Hide Translation"
+      : "📖 Show Translation";
+    this.elements.translationToggle.classList.toggle(
+      "active",
+      this.showTranslation,
+    );
+    this.renderSentence();
+  }
+
+  setSpeed(speed) {
+    this.ttsSpeed = speed;
+
+    document.querySelectorAll(".speed-btn").forEach((el) => {
+      el.classList.toggle("active", parseFloat(el.dataset.speed) === speed);
+    });
+
+    if (typeof audioManager !== "undefined") {
+      audioManager.setSpeed(speed);
+    }
+
+    console.log(`🎤 Speed set to ${speed}x`);
+  }
+
+  // ============================================================
+  // SAVE / LOAD (delegated to MasteryManager)
+  // ============================================================
+
+  saveProgress() {
+    this.mastery.save();
+    console.log("💾 Progress saved for sprint", this.activeSprintIndex);
+  }
+
+  loadProgress() {
+    this.mastery.load(this.activeSprintIndex);
+    console.log(`📂 Progress loaded for sprint ${this.activeSprintIndex}`);
+  }
+
+  // ============================================================
   // UTILITY
   // ============================================================
 
@@ -2290,27 +2723,21 @@ class SentenceBuilder {
       this.sprints[this.activeSprintIndex],
     );
     console.log("Sentences in sprint:", this.sprintSentences.length);
-    console.log(
-      "Mastered:",
-      this.masteredIndices.size,
-      Array.from(this.masteredIndices),
-    );
-    console.log(
-      "Failed:",
-      this.failedIndices.size,
-      Array.from(this.failedIndices),
-    );
-    console.log(
-      "Cycle:",
-      this.cycleNumber,
-      "Remaining:",
-      this.currentCycleSentences.length,
-    );
-    console.log("All completed:", this.allCompleted);
-    console.log("Stats:", this.stats);
+
+    const progress = this.mastery.getProgress();
+    const stats = this.mastery.getStats();
+    const modeStatus = this.mastery.getModeStatus();
+
+    console.log("Mastered:", progress.mastered, "/", progress.total);
+    console.log("Failed:", this.mastery.getFailedCount());
+    console.log("Cycle:", stats.cycleNumber);
+    console.log("All completed:", this.mastery.allCompleted);
+    console.log("Stats:", stats);
     console.log("Current sentence:", this.currentSentenceIndex);
     console.log("Show furigana:", this.showFurigana);
     console.log("Mode:", this.mode);
+    console.log("Primary mode:", modeStatus.primaryMode);
+    console.log("Practice mode:", modeStatus.isPracticeMode);
     if (this.mode === "select-order") {
       console.log("Distractors:", this.distractors.length);
       console.log("Correct words:", this.correctWordCount);
