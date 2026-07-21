@@ -475,13 +475,21 @@ class SentenceBuilder {
 
   getSprintSentences(sprintIndex) {
     const sprint = this.sprints[sprintIndex];
-    if (!sprint) return [];
+    if (!sprint) {
+      console.warn(`⚠️ Sprint ${sprintIndex} not found`);
+      return [];
+    }
 
     const sentences = [];
     const data = this.getData();
-    if (!data || !data.length) return [];
+    if (!data || !data.length) {
+      console.warn("⚠️ No data found");
+      return [];
+    }
 
-    for (let i = sprint.start; i <= sprint.end; i++) {
+    console.log(`📚 Getting sentences for sprint ${sprintIndex}: ${sprint.start} to ${sprint.end}`);
+    
+    for (let i = sprint.start; i <= sprint.end && i < data.length; i++) {
       if (data[i]) {
         sentences.push({
           index: i,
@@ -489,6 +497,8 @@ class SentenceBuilder {
         });
       }
     }
+    
+    console.log(`📚 Found ${sentences.length} sentences for sprint ${sprintIndex}`);
     return sentences;
   }
 
@@ -503,14 +513,34 @@ class SentenceBuilder {
       return;
     }
 
-    // Initialize mastery manager
-    this.mastery.init(sprintIndex, this.sprintSentences.length, "fill");
-
-    // Reset practice mode and started state when loading a new sprint
+    // COMPLETELY RESET the mastery manager for the new sprint
+    const currentPrimaryMode = this.mastery ? this.mastery.primaryMode : "fill";
+    this.mastery = new MasteryManager(sprintIndex);
+    this.mastery.init(sprintIndex, this.sprintSentences.length, currentPrimaryMode);
+    
+    // Ensure the cycle sentences match the sprint size
+    if (this.mastery.currentCycleSentences.length !== this.sprintSentences.length) {
+      console.log(`🔄 Regenerating cycle sentences: old length ${this.mastery.currentCycleSentences.length}, new length ${this.sprintSentences.length}`);
+      this.mastery.currentCycleSentences = Array.from({ length: this.sprintSentences.length }, (_, i) => i);
+      this.mastery.shuffleArray(this.mastery.currentCycleSentences);
+      this.mastery.save();
+    }
+    
+    // Reset practice mode and started state
     this.mastery.isPracticeMode = false;
     this.mastery.sprintStarted = false;
     this.mastery.updatePracticeMode(this.mode);
     this.mastery.save();
+
+    // Reset current sentence state
+    this.currentSentenceIndex = -1;
+    this.currentSentence = null;
+    this.words = [];
+    this.blankIndices = [];
+    this.wordBank = [];
+    this.placements = {};
+    this.isSubmitted = false;
+    this.isSubmitting = false;
 
     this.elements.sprintSelect.value = sprintIndex;
     this.elements.completionOverlay.classList.remove("visible");
@@ -527,7 +557,7 @@ class SentenceBuilder {
   }
 
   // ============================================================
-  // SENTENCE LOADING
+  // SENTENCE LOADING - FIXED: Map relative indices to global indices
   // ============================================================
 
   loadNextSentence() {
@@ -557,13 +587,13 @@ class SentenceBuilder {
 
         // Find the next sentence to practice
         const totalSentences = this.sprintSentences.length;
-        let nextIndex = this.currentSentenceIndex;
+        let nextRelativeIndex = this.currentSentenceIndex;
         let found = false;
 
         for (let i = 0; i < totalSentences; i++) {
-          nextIndex = (nextIndex + 1) % totalSentences;
-          // Get the actual sentence index from sprintSentences
-          const sentence = this.sprintSentences[nextIndex];
+          nextRelativeIndex = (nextRelativeIndex + 1) % totalSentences;
+          // Get the actual sentence data using the relative index
+          const sentence = this.sprintSentences[nextRelativeIndex];
           if (sentence && data[sentence.index]) {
             found = true;
             break;
@@ -571,8 +601,8 @@ class SentenceBuilder {
         }
 
         if (found) {
-          const sentenceData = this.sprintSentences[nextIndex];
-          this.currentSentenceIndex = sentenceData.index;
+          const sentenceData = this.sprintSentences[nextRelativeIndex];
+          this.currentSentenceIndex = sentenceData.index; // Store the GLOBAL index
           this.currentSentence = sentenceData.data;
           this.preparePuzzle();
           this.renderSentence();
@@ -594,10 +624,10 @@ class SentenceBuilder {
       return;
     }
 
-    // Get next sentence from mastery manager (normal mode)
-    const sentenceIndex = this.mastery.getNextSentence();
+    // Get next sentence from mastery manager (returns RELATIVE index)
+    const relativeIndex = this.mastery.getNextSentence();
 
-    if (sentenceIndex === null) {
+    if (relativeIndex === null) {
       // No more sentences, check completion
       if (this.mastery.checkCompletion()) {
         if (this.mastery.shouldShowCompletion()) {
@@ -609,18 +639,25 @@ class SentenceBuilder {
       return;
     }
 
-    // Load the sentence
-    const data = this.getData();
-    const sentenceData =
-      data && data[sentenceIndex] ? data[sentenceIndex] : null;
-
-    if (!sentenceData) {
-      console.error(`❌ Sentence at index ${sentenceIndex} not found`);
+    // Map the relative index to the global index using sprintSentences
+    const sentenceInfo = this.sprintSentences[relativeIndex];
+    if (!sentenceInfo) {
+      console.error(`❌ No sentence info for relative index ${relativeIndex}`);
       this.loadNextSentence();
       return;
     }
 
-    this.currentSentenceIndex = sentenceIndex;
+    const globalIndex = sentenceInfo.index;
+    const data = this.getData();
+    const sentenceData = data && data[globalIndex] ? data[globalIndex] : null;
+
+    if (!sentenceData) {
+      console.error(`❌ Sentence at global index ${globalIndex} not found`);
+      this.loadNextSentence();
+      return;
+    }
+
+    this.currentSentenceIndex = globalIndex; // Store the GLOBAL index
     this.currentSentence = sentenceData;
 
     this.preparePuzzle();
@@ -637,7 +674,7 @@ class SentenceBuilder {
     this.syncPrimaryModeUI();
 
     console.log(
-      `📖 Loaded sentence ${this.currentSentenceIndex}: ${this.currentSentence.jp}`,
+      `📖 Loaded sentence: relative[${relativeIndex}] → global[${globalIndex}]: ${this.currentSentence.jp}`,
     );
   }
 
