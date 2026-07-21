@@ -1,0 +1,1528 @@
+/* ============================================================
+   SENTENCE BUILDER - Main Styles
+   All colors, fonts, sizes, and spacing can be customized here
+   ============================================================ */
+
+/* ============================================================
+   1. ROOT VARIABLES - All customizable values in one place
+   ============================================================ */
+:root {
+  /* ---------- FONTS ---------- */
+  --font-family:
+    "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+  --font-size-base: 16px;
+  --font-weight-normal: 400;
+  --font-weight-bold: 600;
+  --font-weight-light: 300;
+
+  /* ---------- PAGE COLORS ---------- */
+  --color-bg-page: #a7e7fa;
+  --color-bg-card: #ffffff;
+  --color-text-primary: #080808;
+  --color-text-secondary: #3d352b;
+  --color-text-muted: #7a6f60;
+  --color-text-light: #b8a58b;
+
+  /* ---------- BRAND COLORS ---------- */
+  --color-primary: #5a8a6a;
+  --color-primary-dark: #4a7a5a;
+  --color-primary-light: #eaf5ea;
+  --color-primary-bg: #d4e8d4;
+
+  --color-accent: #4a7a8a;
+  --color-accent-dark: #3a6a7a;
+  --color-accent-light: #e3f0ff;
+
+  /* ---------- MODE BUTTONS ---------- */
+  --color-mode-active: #5a8a6a;
+  --color-mode-active-text: #ffffff;
+  --color-mode-inactive: #faf8f5;
+  --color-mode-inactive-text: #3d352b;
+  --color-mode-locked: #f0ebe3;
+  --color-mode-locked-text: #b8a58b;
+
+  /* ---------- STATUS BAR ---------- */
+  --color-status-not-started: #f5f0eb;
+  --color-status-not-started-text: #7a6f60;
+  --color-status-locked: #fff8e8;
+  --color-status-locked-text: #8a7a4a;
+  --color-status-practice: #e3f0ff;
+  --color-status-practice-text: #1a5a8a;
+  --color-status-complete: #eaf5ea;
+  --color-status-complete-text: #2d7a4a;
+  --color-status-mastery: #eaf5ea;
+  --color-status-mastery-text: #2d7a4a;
+
+  /* ---------- WORD BANK ---------- */
+  --color-bank-bg: #fbfcc3;
+  --color-bank-border: #e8e0d6;
+  --color-bank-word: #ffffff;
+  --color-bank-word-border: #d4c9b8;
+  --color-bank-word-text: #000000;
+  --color-bank-word-hover: #f5f0eb;
+  --color-bank-word-selected: #eaf550;
+  --color-bank-word-used: rgba(0, 0, 0, 0.25);
+
+  /* ---------- FURIGANA ---------- */
+  --color-furigana: #8b0000;
+
+  /* ---------- BLANK SLOTS ---------- */
+  --color-blank-bg: #cdee99;
+  --color-blank-border: #8a7a6a;
+  --color-blank-filled-bg: #eaf5ea;
+  --color-blank-filled-border: #5a8a6a;
+  --color-blank-correct-bg: #d4e8d4;
+  --color-blank-correct-border: #2d7a4a;
+  --color-blank-incorrect-bg: #f8d4d4;
+  --color-blank-incorrect-border: #b34a4a;
+
+  /* ---------- FEEDBACK ---------- */
+  --color-feedback-success-bg: #eaf5ea;
+  --color-feedback-success-border: #5a8a6a;
+  --color-feedback-success-text: #1a4a2a;
+  --color-feedback-error-bg: #f8ecec;
+  --color-feedback-error-border: #b34a4a;
+  --color-feedback-error-text: #5a2a2a;
+
+  /* ---------- CORRECT SENTENCE ---------- */
+  --color-correct-bg: #ffffff;
+  --color-correct-border: #0066cc;
+  --color-correct-label: #0066cc;
+  --color-correct-text: #1a1a2e;
+  --color-correct-highlight: #0066cc;
+  --color-correct-play-btn: #0066cc;
+  --color-correct-play-btn-hover: #004499;
+
+  /* ---------- ORDER SLOTS ---------- */
+  --color-order-slot-bg: #ffffff;
+  --color-order-slot-border: #d4c9b8;
+  --color-order-slot-empty-bg: #f5f0eb;
+  --color-order-slot-empty-border: #c8bcaa;
+  --color-order-slot-filled-bg: #eaf5ea;
+  --color-order-slot-filled-border: #5a8a6a;
+  --color-order-slot-correct-bg: #c8e0c8;
+  --color-order-slot-correct-border: #2d7a4a;
+  --color-order-slot-incorrect-bg: #f8d4d4;
+  --color-order-slot-incorrect-border: #b34a4a;
+
+  /* ---------- BUTTONS ---------- */
+  --color-btn-primary: #5a8a6a;
+  --color-btn-primary-hover: #4a7a5a;
+  --color-btn-primary-text: #ffffff;
+
+  --color-btn-danger: #b34a4a;
+  --color-btn-danger-hover: #a33a3a;
+  --color-btn-danger-text: #ffffff;
+
+  --color-btn-secondary: #8a7a6a;
+  --color-btn-secondary-hover: #7a6a5a;
+  --color-btn-secondary-text: #ffffff;
+
+  --color-btn-tts: #4a7a8a;
+  --color-btn-tts-hover: #3a6a7a;
+  --color-btn-tts-text: #ffffff;
+
+  /* ---------- SPACING ---------- */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* ---------- BORDER RADIUS ---------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 30px;
+  --radius-full: 40px;
+
+  /* ---------- SHADOWS ---------- */
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-word: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-word-hover: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================
+   2. RESET & BODY
+   ============================================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  padding: var(--spacing-md);
+}
+
+/* ============================================================
+   3. APP CONTAINER
+   ============================================================ */
+.app-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg) 28px var(--spacing-xl);
+  box-shadow: var(--shadow-card);
+}
+
+/* ============================================================
+   4. HEADER
+   ============================================================ */
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #031bf8;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  gap: 10px;
+}
+
+.app-header h1 {
+  font-size: 1.6rem;
+  font-weight: var(--font-weight-bold);
+  color: #030303;
+  letter-spacing: -0.3px;
+}
+
+.app-header h1 span {
+  font-weight: var(--font-weight-light);
+  color: #1a1714;
+  font-size: 1rem;
+}
+
+/* ============================================================
+   5. HEADER CONTROLS
+   ============================================================ */
+.header-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  align-items: center;
+}
+
+.header-controls label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #070604;
+}
+
+.header-controls select,
+.header-controls button {
+  font-size: 0.8rem;
+  padding: var(--spacing-xs) 12px;
+  border-radius: var(--radius-xl);
+  border: 1px solid #d4c9b8;
+  background: var(--color-bg-card);
+  cursor: pointer;
+  font-family: inherit;
+  transition: 0.15s;
+}
+
+.header-controls select:hover,
+.header-controls button:hover {
+  background: #f0ebe3;
+}
+
+/* Toggle buttons (Furigana ON/OFF) */
+.header-controls .toggle-btn {
+  background: var(--color-bg-card);
+  border-color: #fc0202;
+  font-weight: 500;
+  min-width: 60px;
+  text-align: center;
+}
+
+.header-controls .toggle-btn.active {
+  background: #72f78f;
+  border-color: #00f700;
+  color: rgb(2, 2, 2);
+}
+
+/* Speed buttons (0.75x, 1.0x, 1.25x) */
+.header-controls .speed-btn {
+  background: var(--color-bg-card);
+  border-color: #d4c9b8;
+  padding: var(--spacing-xs) 10px;
+  font-size: 0.7rem;
+  font-weight: var(--font-weight-bold);
+  min-width: 40px;
+  text-align: center;
+}
+
+.header-controls .speed-btn.active {
+  background: #72f78f;
+  border-color: #00f700;
+  color: rgb(2, 2, 2);
+}
+
+/* ============================================================
+   6. MODE TOGGLE - Fill, Order, Select
+   ============================================================ */
+.mode-toggle {
+  display: inline-flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+  margin-left: var(--spacing-xs);
+}
+
+.mode-toggle .mode-label {
+  font-size: 0.65rem;
+  color: #070707;
+  margin-right: 2px;
+}
+
+.mode-btn {
+  font-size: 0.65rem;
+  padding: 3px 10px;
+  border-radius: var(--radius-xl);
+  border: 1px solid #d4c9b8;
+  background: var(--color-bg-card);
+  color: #000000;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.mode-btn.active {
+  background: var(--color-mode-active);
+  color: var(--color-mode-active-text);
+  border-color: #4a7a5a;
+}
+
+.mode-btn:not(.active):hover {
+  background: #f0ebe3;
+}
+
+/* Locked mode button */
+.mode-btn.locked {
+  background: var(--color-mode-locked) !important;
+  color: var(--color-mode-locked-text) !important;
+  border-color: #d4c9b8 !important;
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+}
+
+/* ============================================================
+   7. MASTERY SELECTOR
+   ============================================================ */
+.mastery-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-left: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.mastery-selector .mastery-label {
+  font-size: 0.65rem;
+  color: #070707;
+  margin-right: 2px;
+}
+
+.mastery-selector select {
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: var(--radius-xl);
+  border: 1px solid #d4c9b8;
+  background: var(--color-bg-card);
+  cursor: pointer;
+  font-family: inherit;
+  transition: 0.15s;
+}
+
+.mastery-selector select:hover {
+  background: #f0ebe3;
+}
+
+.mastery-selector select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#modeStatus {
+  font-size: 0.65rem;
+  padding: 2px 10px;
+  border-radius: var(--radius-md);
+  background: var(--color-status-mastery);
+  color: var(--color-status-mastery-text);
+  border: 1px solid #5a8a6a;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+/* Reset Mastery Progress button */
+.reset-mastery-btn {
+  font-size: 0.55rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-btn-danger);
+  background: #fff;
+  color: var(--color-btn-danger);
+  cursor: pointer;
+  margin-left: var(--spacing-xs);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.reset-mastery-btn:hover {
+  background: var(--color-btn-danger);
+  color: #fff;
+}
+
+/* ============================================================
+   8. PROGRESS SECTION
+   ============================================================ */
+.progress-section {
+  margin-bottom: var(--spacing-md);
+}
+
+.progress-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+.progress-stats .stat-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.progress-stats .stat-item .stat-value {
+  font-weight: var(--font-weight-bold);
+  color: #1a1a1a;
+}
+
+.progress-stats .stat-item .stat-label {
+  color: var(--color-text-muted);
+}
+
+.progress-stats .stat-item.correct .stat-value {
+  color: #2d7a4a;
+}
+
+.progress-stats .stat-item.incorrect .stat-value {
+  color: var(--color-btn-danger);
+}
+
+/* Progress bar track */
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #e8e0d6;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* Progress bar fill */
+.progress-bar {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-lg);
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-xs);
+}
+
+/* ============================================================
+   9. SENTENCE AREA
+   ============================================================ */
+.sentence-area {
+  background: var(--color-bg-card);
+  border: 2px solid #e8e0d6;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg) var(--spacing-lg) 18px;
+  margin-bottom: 14px;
+  min-height: 140px;
+}
+
+/* Translation toggle button container */
+.sentence-area .translation-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Translation toggle button */
+.sentence-area .translation-toggle button {
+  background: none;
+  border: 1px solid #d4c9b8;
+  border-radius: var(--radius-xl);
+  padding: 3px 14px;
+  font-size: 0.9rem;
+  color: #5a4e3e;
+  cursor: pointer;
+  font-family: inherit;
+  transition: 0.15s;
+}
+
+.sentence-area .translation-toggle button:hover {
+  background: #f0ebe3;
+}
+
+.sentence-area .translation-toggle button.active {
+  background: #b8a58b;
+  border-color: #9e8a72;
+  color: white;
+}
+
+/* ============================================================
+   10. SENTENCE JP - Japanese sentence display
+   ============================================================ */
+.sentence-jp {
+  font-size: 1.9rem;
+  line-height: 2.6;
+  color: #000000;
+  padding: var(--spacing-sm) var(--spacing-xs);
+  word-break: break-word;
+  font-family: var(--font-family);
+  min-height: 70px;
+  background: var(--color-bg-card);
+}
+
+/* Ruby (furigana) styling */
+.sentence-jp ruby {
+  ruby-align: center;
+}
+
+/* Furigana text (small text above kanji) */
+.sentence-jp ruby rt {
+  color: var(--color-furigana);
+  font-size: 1rem;
+  font-weight: var(--font-weight-light);
+  letter-spacing: 0.3px;
+}
+
+/* ============================================================
+   11. FILL MODE - blank slot styles
+   ============================================================ */
+.sentence-jp .blank-slot {
+  display: inline-block;
+  min-width: 70px;
+  border-bottom: 3px dashed var(--color-blank-border);
+  margin: 0 2px;
+  padding: 0 8px 2px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.15s;
+  background: var(--color-blank-bg);
+  border-radius: 0 0 4px 4px;
+  min-height: 55px;
+  vertical-align: bottom;
+  font-size: 1.9rem;
+  color: #000000;
+  position: relative;
+}
+
+.sentence-jp .blank-slot.highlight {
+  background: #f5e3c4;
+  border-bottom-color: #b8a58b;
+}
+
+.sentence-jp .blank-slot.filled {
+  border-bottom-style: solid;
+  border-bottom-color: var(--color-blank-filled-border);
+  background: var(--color-blank-filled-bg);
+}
+
+.sentence-jp .blank-slot.correct {
+  border-bottom-color: var(--color-blank-correct-border);
+  background: var(--color-blank-correct-bg);
+}
+
+.sentence-jp .blank-slot.incorrect {
+  border-bottom-color: var(--color-blank-incorrect-border);
+  background: var(--color-blank-incorrect-bg);
+}
+
+.sentence-jp .blank-slot .placed-word {
+  display: inline-block;
+  font-size: 1.9rem;
+  color: #000000;
+  cursor: pointer;
+}
+
+.sentence-jp .blank-slot .placed-word ruby {
+  ruby-align: center;
+}
+
+.sentence-jp .blank-slot .placed-word ruby rt {
+  color: var(--color-furigana);
+  font-size: 1rem;
+}
+
+.sentence-jp .blank-slot .blank-number {
+  font-size: 0.7rem;
+  color: var(--color-text-light);
+  display: block;
+  margin-top: -4px;
+}
+
+/* ============================================================
+   12. ORDER MODE - slot styles
+   ============================================================ */
+.order-sentence-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  justify-content: center;
+  padding: var(--spacing-sm) 0;
+  min-height: 80px;
+  align-items: center;
+  width: 100%;
+  flex-direction: column;
+}
+
+.order-sentence-container .order-instruction {
+  color: var(--color-text-light);
+  font-size: 0.9rem;
+  font-style: italic;
+  padding: var(--spacing-sm) 0;
+  text-align: center;
+  width: 100%;
+}
+
+.order-sentence-container .order-slots-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Individual order slot */
+.order-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-order-slot-bg);
+  border: 2px solid var(--color-order-slot-border);
+  border-radius: var(--radius-xl);
+  font-size: 1.9rem;
+  color: #000000;
+  cursor: pointer;
+  transition: 0.15s;
+  user-select: none;
+  font-family: var(--font-family);
+  min-width: 55px;
+  gap: 0 6px;
+  position: relative;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  min-height: auto;
+  width: auto;
+  max-width: none;
+  overflow: visible;
+  word-break: keep-all;
+  line-height: 1.8;
+  text-align: center;
+  vertical-align: middle;
+  ruby-align: center;
+}
+
+.order-slot:hover {
+  background: #f0ebe3;
+  border-color: #b8a58b;
+  transform: scale(1.02);
+}
+
+.order-slot:active {
+  transform: scale(0.95);
+}
+
+.order-slot ruby {
+  ruby-align: center;
+  display: inline;
+  line-height: 1.8;
+  vertical-align: middle;
+  ruby-position: over;
+  text-align: center;
+}
+
+.order-slot ruby rt {
+  color: var(--color-furigana);
+  font-size: 0.9rem;
+  font-weight: var(--font-weight-light);
+  display: ruby-text;
+  line-height: 1.2;
+  text-align: center;
+  letter-spacing: 0.5px;
+  ruby-position: over;
+}
+
+.order-slot .order-number {
+  font-size: 0.55rem;
+  color: #030200;
+  line-height: 1.2;
+  font-weight: var(--font-weight-bold);
+  margin-left: var(--spacing-xs);
+}
+
+.order-slot .slot-placeholder {
+  font-size: 1rem;
+  color: #d4c9b8;
+  line-height: 1;
+}
+
+/* Empty slot */
+.order-slot.empty {
+  background: var(--color-order-slot-empty-bg);
+  border-style: dashed;
+  border-color: var(--color-order-slot-empty-border);
+  min-width: 50px;
+  min-height: 50px;
+  padding: var(--spacing-sm) 14px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.order-slot.empty:hover {
+  background: #f0ebe3;
+  border-color: #b8a58b;
+  transform: scale(1.02);
+}
+
+/* Filled slot */
+.order-slot.filled {
+  background: var(--color-order-slot-filled-bg);
+  border-color: var(--color-order-slot-filled-border);
+  border-style: solid;
+}
+
+.order-slot.filled:hover {
+  background: #d4e8d4;
+  transform: scale(1.02);
+}
+
+.order-slot.filled.correct {
+  background: var(--color-order-slot-correct-bg);
+  border-color: var(--color-order-slot-correct-border);
+}
+
+.order-slot.filled.incorrect {
+  background: var(--color-order-slot-incorrect-bg);
+  border-color: var(--color-order-slot-incorrect-border);
+}
+
+/* ============================================================
+   13. SELECT MODE - instruction text
+   ============================================================ */
+.select-mode-instruction {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-sm);
+  text-align: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: #faf8f5;
+  border-radius: var(--radius-sm);
+  border: 1px solid #e8e0d6;
+  width: 100%;
+}
+
+.select-mode-instruction .highlight-count {
+  font-weight: 700;
+  color: #2d7a4a;
+}
+
+.select-mode-instruction .distractor-warning {
+  color: #b38a4a;
+  font-weight: 500;
+}
+
+/* ============================================================
+   14. SENTENCE ENGLISH TRANSLATION
+   ============================================================ */
+.sentence-en {
+  font-size: 0.95rem;
+  color: #5a4e3e;
+  padding: 10px var(--spacing-xs) var(--spacing-xs) var(--spacing-xs);
+  border-top: 1px dashed #e0d8ce;
+  margin-top: 10px;
+  display: none;
+  font-style: italic;
+}
+
+.sentence-en.visible {
+  display: block;
+}
+
+/* ============================================================
+   15. SENTENCE CONTROLS
+   ============================================================ */
+.sentence-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  align-items: center;
+}
+
+.sentence-controls .sentence-hint {
+  font-size: 0.75rem;
+  color: #8a7a6a;
+  font-style: italic;
+}
+
+/* ============================================================
+   16. WORD BANK AREA
+   ============================================================ */
+.word-bank-area {
+  background: var(--color-bank-bg);
+  border: 2px solid var(--color-bank-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin-bottom: 14px;
+  min-height: 80px;
+}
+
+.word-bank-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.word-bank-label .bank-count {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+/* ============================================================
+   17. WORD BANK - individual word tiles
+   ============================================================ */
+.word-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  min-height: 50px;
+  align-items: center;
+  padding: var(--spacing-xs) 0;
+}
+
+.word-bank .bank-word {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 24px !important;
+  background: var(--color-bank-word) !important;
+  border: 2.5px solid var(--color-bank-word-border) !important;
+  border-radius: var(--radius-xl) !important;
+  font-size: 1.8rem !important;
+  color: var(--color-bank-word-text) !important;
+  cursor: pointer;
+  transition: 0.15s;
+  user-select: none;
+  font-family: var(--font-family);
+  min-width: 60px;
+  gap: 0 6px;
+  position: relative;
+  white-space: nowrap;
+  box-shadow: var(--shadow-word);
+}
+
+.word-bank .bank-word:hover {
+  background: var(--color-bank-word-hover) !important;
+  border-color: #b8a58b !important;
+  transform: scale(1.03);
+  box-shadow: var(--shadow-word-hover);
+}
+
+.word-bank .bank-word:active {
+  transform: scale(0.95);
+}
+
+.word-bank .bank-word.selected {
+  background: var(--color-bank-word-selected) !important;
+  border-color: #b8a58b !important;
+  box-shadow: 0 0 0 3px rgba(184, 165, 139, 0.3);
+}
+
+.word-bank .bank-word.used {
+  opacity: 0.25;
+  pointer-events: none;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+.word-bank .bank-word ruby {
+  ruby-align: center;
+}
+
+.word-bank .bank-word ruby rt {
+  color: var(--color-furigana) !important;
+  font-size: 1rem !important;
+  font-weight: var(--font-weight-light);
+}
+
+.word-bank .bank-word .word-tts-btn {
+  background: none;
+  border: none;
+  font-size: 0.75rem;
+  cursor: pointer;
+  color: #5a7a8a;
+  padding: 0 2px 0 10px;
+  transition: 0.15s;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.word-bank .bank-word .word-tts-btn:hover {
+  color: #3a5a6a;
+  transform: scale(1.2);
+}
+
+/* Distractor words (select mode) */
+.word-bank .bank-word.distractor {
+  border-color: #d4a04a;
+  background: #fcf5e8;
+}
+
+.word-bank .bank-word.distractor .distractor-badge {
+  font-size: 0.5rem;
+  color: var(--color-btn-danger);
+  margin-left: var(--spacing-xs);
+  background: #ffebee;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-weight: var(--font-weight-bold);
+}
+
+.word-bank .bank-word.distractor.used {
+  opacity: 0.3;
+  background: #f5ece0;
+}
+
+.word-bank .empty-bank-message {
+  color: var(--color-text-light);
+  font-size: 0.9rem;
+  font-style: italic;
+  padding: var(--spacing-sm) 0;
+}
+
+/* ============================================================
+   18. ACTION CONTROLS
+   ============================================================ */
+.action-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: var(--spacing-md);
+  align-items: center;
+}
+
+.action-btn {
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: 0.15s;
+  background: #e8e0d6;
+  color: var(--color-text-secondary);
+}
+
+.action-btn:hover:not(:disabled) {
+  transform: scale(0.97);
+  background: #ddd4c8;
+}
+
+.action-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.action-btn.primary {
+  background: var(--color-btn-primary);
+  color: var(--color-btn-primary-text);
+}
+
+.action-btn.primary:hover:not(:disabled) {
+  background: var(--color-btn-primary-hover);
+}
+
+.action-btn.danger {
+  background: var(--color-btn-danger);
+  color: var(--color-btn-danger-text);
+}
+
+.action-btn.danger:hover:not(:disabled) {
+  background: var(--color-btn-danger-hover);
+}
+
+.action-btn.secondary {
+  background: var(--color-btn-secondary);
+  color: var(--color-btn-secondary-text);
+}
+
+.action-btn.secondary:hover:not(:disabled) {
+  background: var(--color-btn-secondary-hover);
+}
+
+.action-btn.sentence-tts {
+  background: var(--color-btn-tts);
+  color: var(--color-btn-tts-text);
+}
+
+.action-btn.sentence-tts:hover:not(:disabled) {
+  background: var(--color-btn-tts-hover);
+}
+
+/* Clear Progress button */
+.action-btn.clear-btn {
+  background: var(--color-btn-secondary);
+  color: var(--color-btn-secondary-text);
+  font-size: 0.7rem;
+  padding: 6px 14px;
+}
+
+.action-btn.clear-btn:hover:not(:disabled) {
+  background: var(--color-btn-secondary-hover);
+}
+
+/* ============================================================
+   19. FEEDBACK AREA
+   ============================================================ */
+.feedback-area {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+  display: none;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.feedback-area.visible {
+  display: block;
+}
+
+.feedback-area.success {
+  background: var(--color-feedback-success-bg);
+  border: 2px solid var(--color-feedback-success-border);
+  color: var(--color-feedback-success-text);
+}
+
+.feedback-area.error {
+  background: var(--color-feedback-error-bg);
+  border: 2px solid var(--color-feedback-error-border);
+  color: var(--color-feedback-error-text);
+}
+
+.feedback-area .feedback-title {
+  font-weight: var(--font-weight-bold);
+  font-size: 1rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.feedback-area .feedback-detail {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.feedback-area .feedback-detail .correct-word {
+  font-weight: var(--font-weight-bold);
+  color: #2d7a4a;
+}
+
+.feedback-area .feedback-detail .wrong-word {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-btn-danger);
+}
+
+.feedback-area .feedback-detail .grammar-hint {
+  display: block;
+  margin-top: 6px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  border-left: 3px solid #8a7a6a;
+}
+
+/* ============================================================
+   20. FEEDBACK - Correct sentence styling
+   ============================================================ */
+.feedback-detail .correct-sentence-container {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-md);
+  background: var(--color-correct-bg);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--color-correct-border);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.feedback-detail .correct-sentence-label {
+  color: var(--color-correct-label);
+  font-size: 1rem;
+  font-weight: var(--font-weight-bold);
+}
+
+.feedback-detail .correct-sentence-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--color-correct-text);
+  line-height: 1.8;
+}
+
+.feedback-detail .correct-sentence-text .highlight-word {
+  color: var(--color-correct-highlight);
+  font-weight: 700;
+}
+
+/* Play button styling in feedback */
+.feedback-detail .play-correct-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--color-correct-play-btn);
+  padding: 0 var(--spacing-xs);
+  transition: transform 0.15s;
+  vertical-align: middle;
+  margin-left: var(--spacing-xs);
+}
+
+.feedback-detail .play-correct-btn:hover {
+  transform: scale(1.2);
+  color: var(--color-correct-play-btn-hover);
+}
+
+/* ============================================================
+   21. COMPLETION OVERLAY
+   ============================================================ */
+.completion-overlay {
+  display: none;
+  background: var(--color-bg-card);
+  border: 3px solid #5a8a6a;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl) 28px;
+  text-align: center;
+  margin-top: var(--spacing-sm);
+}
+
+.completion-overlay.visible {
+  display: block;
+}
+
+.completion-overlay h2 {
+  font-size: 1.8rem;
+  color: #2d7a4a;
+  margin-bottom: 6px;
+}
+
+.completion-overlay .completion-stats {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin: var(--spacing-md) 0;
+  line-height: 1.8;
+}
+
+.completion-overlay .completion-stats .highlight-num {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.completion-overlay .completion-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--spacing-md);
+}
+
+/* ============================================================
+   22. UTILITY CLASSES
+   ============================================================ */
+.hidden {
+  display: none !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-8 {
+  margin-top: var(--spacing-sm);
+}
+
+.mb-8 {
+  margin-bottom: var(--spacing-sm);
+}
+
+.empty-state {
+  color: var(--color-text-light);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: var(--spacing-lg) 0;
+}
+
+.empty-state .empty-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* ============================================================
+   23. RESPONSIVE - Mobile (700px and below)
+   ============================================================ */
+@media (max-width: 700px) {
+  .app-container {
+    padding: 14px 12px 18px;
+  }
+
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-sm);
+  }
+
+  .app-header h1 {
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .app-header h1 span {
+    display: block;
+    font-size: 0.8rem;
+  }
+
+  .header-controls {
+    justify-content: center;
+  }
+
+  .header-controls select,
+  .header-controls button {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+  }
+
+  .sentence-jp {
+    font-size: 1.4rem;
+    line-height: 2.2;
+  }
+
+  .sentence-jp ruby rt {
+    font-size: 0.55rem;
+  }
+
+  .sentence-jp .blank-slot {
+    min-width: 55px;
+    min-height: 36px;
+    font-size: 1.3rem;
+    padding: 0 6px 2px 6px;
+  }
+
+  .sentence-jp .blank-slot .placed-word {
+    font-size: 1.3rem;
+  }
+
+  .sentence-jp .blank-slot .placed-word ruby rt {
+    font-size: 0.5rem;
+  }
+
+  .sentence-jp .blank-slot .blank-number {
+    font-size: 0.6rem;
+  }
+
+  .order-slot {
+    font-size: 1.1rem;
+    padding: 6px 14px;
+    min-width: 40px;
+  }
+
+  .order-slot .order-number {
+    font-size: 0.45rem;
+  }
+
+  .order-slot ruby rt {
+    font-size: 0.5rem;
+  }
+
+  .order-slot.empty {
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .order-sentence-container .order-instruction {
+    font-size: 0.8rem;
+  }
+
+  .word-bank .bank-word {
+    font-size: 1.3rem !important;
+    padding: 8px 16px !important;
+    min-width: 46px;
+  }
+
+  .word-bank .bank-word ruby rt {
+    font-size: 0.55rem !important;
+  }
+
+  .action-btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.8rem;
+  }
+
+  .progress-stats {
+    font-size: 0.7rem;
+    gap: 6px 12px;
+  }
+
+  .completion-overlay h2 {
+    font-size: 1.4rem;
+  }
+
+  .feedback-area {
+    font-size: 0.85rem;
+    padding: var(--spacing-md) 14px;
+  }
+
+  .sentence-area {
+    padding: 14px 14px 12px;
+  }
+
+  .word-bank-area {
+    padding: var(--spacing-md) 14px;
+  }
+
+  .mode-toggle .mode-label {
+    font-size: 0.55rem;
+  }
+
+  .mode-btn {
+    font-size: 0.55rem;
+    padding: 2px 8px;
+  }
+
+  .select-mode-instruction {
+    font-size: 0.75rem;
+  }
+
+  /* Mastery selector mobile */
+  .mastery-selector .mastery-label {
+    font-size: 0.55rem;
+  }
+
+  .mastery-selector select {
+    font-size: 0.55rem;
+    padding: 2px 6px;
+  }
+
+  #modeStatus {
+    font-size: 0.55rem;
+    padding: 2px 8px;
+  }
+
+  .reset-mastery-btn {
+    font-size: 0.5rem;
+    padding: 1px 6px;
+  }
+}
+
+/* ============================================================
+   24. RESPONSIVE - Small mobile (480px and below)
+   ============================================================ */
+@media (max-width: 480px) {
+  .app-container {
+    padding: var(--spacing-sm) 6px var(--spacing-md);
+    border-radius: var(--radius-md);
+  }
+
+  .sentence-jp {
+    font-size: 1.1rem;
+    line-height: 1.8;
+  }
+
+  .sentence-jp ruby rt {
+    font-size: 0.45rem;
+  }
+
+  .sentence-jp .blank-slot {
+    min-width: 44px;
+    min-height: 30px;
+    font-size: 1rem;
+    padding: 0 var(--spacing-xs) 2px var(--spacing-xs);
+    border-bottom-width: 2px;
+  }
+
+  .sentence-jp .blank-slot .placed-word {
+    font-size: 1rem;
+  }
+
+  .sentence-jp .blank-slot .placed-word ruby rt {
+    font-size: 0.4rem;
+  }
+
+  .sentence-jp .blank-slot .blank-number {
+    font-size: 0.5rem;
+  }
+
+  .order-slot {
+    font-size: 0.9rem;
+    padding: var(--spacing-xs) var(--spacing-md);
+    min-width: 30px;
+    border-radius: var(--radius-lg);
+    border-width: 1.5px;
+  }
+
+  .order-slot .order-number {
+    font-size: 0.4rem;
+  }
+
+  .order-slot .slot-placeholder {
+    font-size: 0.7rem;
+  }
+
+  .order-slot ruby rt {
+    font-size: 0.4rem;
+  }
+
+  .order-slot.empty {
+    min-width: 30px;
+    min-height: 30px;
+  }
+
+  .order-sentence-container {
+    gap: var(--spacing-sm) var(--spacing-xs);
+  }
+
+  .order-sentence-container .order-instruction {
+    font-size: 0.7rem;
+  }
+
+  .word-bank .bank-word {
+    font-size: 1.1rem !important;
+    padding: 6px 14px !important;
+    min-width: 38px;
+    border-width: 2px !important;
+  }
+
+  .word-bank .bank-word ruby rt {
+    font-size: 0.45rem !important;
+  }
+
+  .word-bank .bank-word .word-tts-btn {
+    font-size: 0.6rem;
+    padding-left: var(--spacing-xs);
+  }
+
+  .action-btn {
+    padding: 6px var(--spacing-md);
+    font-size: 0.7rem;
+    border-radius: var(--radius-xl);
+  }
+
+  .header-controls {
+    gap: var(--spacing-xs) 6px;
+  }
+
+  .header-controls select,
+  .header-controls button {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+
+  .progress-stats {
+    font-size: 0.6rem;
+    gap: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .feedback-area {
+    font-size: 0.75rem;
+    padding: 10px var(--spacing-md);
+  }
+
+  .completion-overlay {
+    padding: 18px 14px;
+  }
+
+  .completion-overlay h2 {
+    font-size: 1.2rem;
+  }
+
+  .completion-overlay .completion-stats {
+    font-size: 0.85rem;
+  }
+
+  .sentence-area {
+    padding: 10px var(--spacing-sm) 10px;
+  }
+
+  .word-bank-area {
+    padding: var(--spacing-sm) 10px;
+  }
+
+  .mode-toggle .mode-label {
+    font-size: 0.5rem;
+  }
+
+  .mode-btn {
+    font-size: 0.5rem;
+    padding: 2px 6px;
+  }
+
+  .select-mode-instruction {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+
+  /* Mastery selector small mobile */
+  .mastery-selector .mastery-label {
+    font-size: 0.5rem;
+  }
+
+  .mastery-selector select {
+    font-size: 0.5rem;
+    padding: 2px 5px;
+  }
+
+  #modeStatus {
+    font-size: 0.5rem;
+    padding: 2px 6px;
+  }
+
+  .reset-mastery-btn {
+    font-size: 0.45rem;
+    padding: 1px 4px;
+  }
+}

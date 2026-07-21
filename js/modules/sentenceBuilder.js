@@ -213,7 +213,9 @@ class SentenceBuilder {
         this.loadNextSentence();
         this.updateStats();
 
-        console.log(`📚 Sprint 0 loaded with ${this.sprintSentences.length} sentences`);
+        console.log(
+          `📚 Sprint 0 loaded with ${this.sprintSentences.length} sentences`,
+        );
       } else {
         console.error("❌ No sentences found for sprint 0");
       }
@@ -274,10 +276,10 @@ class SentenceBuilder {
     buttons.forEach((btn) => {
       const mode = btn.dataset.mode;
       const isActive = mode === this.mode;
-      
+
       // Check if this mode is locked (mastery in progress, trying to switch to non-mastery mode)
       const isModeLocked = isLocked && mode !== primaryMode;
-      
+
       if (isModeLocked) {
         btn.classList.add("locked");
         btn.style.background = "#f0ebe3";
@@ -301,8 +303,11 @@ class SentenceBuilder {
 
     // Show/hide reset mastery button
     if (this.elements.resetMasteryBtn) {
-      const showReset = this.mastery.sprintStarted && !this.mastery.allCompleted;
-      this.elements.resetMasteryBtn.style.display = showReset ? "inline-block" : "none";
+      const showReset =
+        this.mastery.sprintStarted && !this.mastery.allCompleted;
+      this.elements.resetMasteryBtn.style.display = showReset
+        ? "inline-block"
+        : "none";
     }
 
     console.log(`🎯 UI synced to mode: ${this.mode}, locked: ${isLocked}`);
@@ -575,8 +580,7 @@ class SentenceBuilder {
           this.updateStats();
           this.hideFeedback();
           this.updateSubmitButton();
-          this.elements.sentenceHint.textContent =
-            `🏋️ Practice mode (${this.mode}). All sentences mastered! Keep practicing!`;
+          this.elements.sentenceHint.textContent = `🏋️ Practice mode (${this.mode}). All sentences mastered! Keep practicing!`;
           this.elements.sentenceHint.style.color = "#4a8aba";
           this.elements.sentenceTtsBtn.disabled = false;
           this.syncModeUI();
@@ -607,7 +611,8 @@ class SentenceBuilder {
 
     // Load the sentence
     const data = this.getData();
-    const sentenceData = data && data[sentenceIndex] ? data[sentenceIndex] : null;
+    const sentenceData =
+      data && data[sentenceIndex] ? data[sentenceIndex] : null;
 
     if (!sentenceData) {
       console.error(`❌ Sentence at index ${sentenceIndex} not found`);
@@ -626,7 +631,7 @@ class SentenceBuilder {
 
     this.elements.submitBtn.disabled = true;
     this.elements.sentenceTtsBtn.disabled = false;
-    
+
     // Update status bar after loading
     this.syncModeUI();
     this.syncPrimaryModeUI();
@@ -1297,8 +1302,7 @@ class SentenceBuilder {
 
     // CASE 1: Sprint not started
     if (!progress.sprintStarted && !this.mastery.allCompleted) {
-      this.elements.sentenceHint.textContent =
-        `📊 Sprint not started yet. Choose a mastery mode and start practicing! (Mastery: ${primaryModeLabel})`;
+      this.elements.sentenceHint.textContent = `📊 Sprint not started yet. Choose a mastery mode and start practicing! (Mastery: ${primaryModeLabel})`;
       this.elements.sentenceHint.style.color = "#7a6f60";
       this.updateSubmitButton();
       return;
@@ -1307,8 +1311,7 @@ class SentenceBuilder {
     // CASE 2: Locked mastery mode (in progress)
     if (progress.isLocked) {
       const practiceLabel = modeLabels[this.mode] || this.mode;
-      this.elements.sentenceHint.textContent =
-        `🔒 Mastery: ${primaryModeLabel} (${progress.mastered}/${progress.total}) | Practicing: ${practiceLabel}. Complete ${primaryModeLabel} to unlock other modes!`;
+      this.elements.sentenceHint.textContent = `🔒 Mastery: ${primaryModeLabel} (${progress.mastered}/${progress.total}) | Practicing: ${practiceLabel}. Complete ${primaryModeLabel} to unlock other modes!`;
       this.elements.sentenceHint.style.color = "#8a7a4a";
       this.updateSubmitButton();
       return;
@@ -1316,20 +1319,17 @@ class SentenceBuilder {
 
     // CASE 3: Practice mode
     if (this.mastery.isPracticeMode) {
-      this.elements.sentenceHint.textContent =
-        `🏋️ Practice mode (${currentModeLabel}). All sentences mastered! Keep practicing! (Mastery tracked in ${primaryModeLabel})`;
+      this.elements.sentenceHint.textContent = `🏋️ Practice mode (${currentModeLabel}). All sentences mastered! Keep practicing! (Mastery tracked in ${primaryModeLabel})`;
       this.elements.sentenceHint.style.color = "#4a8aba";
     }
     // CASE 4: Sprint complete
     else if (this.mastery.allCompleted) {
-      this.elements.sentenceHint.textContent =
-        `🎉 Sprint complete! Switch to any mode for practice!`;
+      this.elements.sentenceHint.textContent = `🎉 Sprint complete! Switch to any mode for practice!`;
       this.elements.sentenceHint.style.color = "#2d7a4a";
     }
     // CASE 5: Normal mastery mode
     else {
-      this.elements.sentenceHint.textContent =
-        `📊 Mastery mode — your progress counts! (${primaryModeLabel})`;
+      this.elements.sentenceHint.textContent = `📊 Mastery mode — your progress counts! (${primaryModeLabel})`;
       this.elements.sentenceHint.style.color = "#2d7a4a";
     }
 
@@ -1709,19 +1709,7 @@ class SentenceBuilder {
       this.isSubmitting = false;
       this.updateSubmitButton();
       this.updateStats();
-
-      // If in practice mode, don't auto-advance
-      if (this.mastery.isPracticeMode) {
-        setTimeout(() => {
-          this.isSubmitted = false;
-          this.updateSubmitButton();
-          this.renderSentence();
-        }, 1500);
-      } else {
-        setTimeout(() => {
-          this.loadNextSentence();
-        }, 1500);
-      }
+      // NO auto-advance - user clicks "Next Sentence" button
     } else {
       this.showFeedback(false, results);
       this.isSubmitted = true;
@@ -1731,8 +1719,7 @@ class SentenceBuilder {
 
       // In practice mode, allow user to continue after seeing feedback
       if (this.mastery.isPracticeMode) {
-        this.elements.sentenceHint.textContent =
-          `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
+        this.elements.sentenceHint.textContent = `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
         this.elements.sentenceHint.style.color = "#7a6f60";
       } else {
         // In mastery mode, allow retry
@@ -1792,18 +1779,7 @@ class SentenceBuilder {
       this.isSubmitting = false;
       this.updateSubmitButton();
       this.updateStats();
-
-      if (this.mastery.isPracticeMode) {
-        setTimeout(() => {
-          this.isSubmitted = false;
-          this.updateSubmitButton();
-          this.renderSentenceOrder();
-        }, 1500);
-      } else {
-        setTimeout(() => {
-          this.loadNextSentence();
-        }, 1500);
-      }
+      // NO auto-advance - user clicks "Next Sentence" button
     } else {
       this.showFeedback(false, results);
       this.isSubmitted = true;
@@ -1811,10 +1787,8 @@ class SentenceBuilder {
       this.updateSubmitButton();
       this.updateStats();
 
-      // In practice mode, allow user to continue
       if (this.mastery.isPracticeMode) {
-        this.elements.sentenceHint.textContent =
-          `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
+        this.elements.sentenceHint.textContent = `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
         this.elements.sentenceHint.style.color = "#7a6f60";
       } else {
         setTimeout(() => {
@@ -1880,18 +1854,7 @@ class SentenceBuilder {
       this.isSubmitting = false;
       this.updateSubmitButton();
       this.updateStats();
-
-      if (this.mastery.isPracticeMode) {
-        setTimeout(() => {
-          this.isSubmitted = false;
-          this.updateSubmitButton();
-          this.renderSentenceSelectOrder();
-        }, 1500);
-      } else {
-        setTimeout(() => {
-          this.loadNextSentence();
-        }, 1500);
-      }
+      // NO auto-advance - user clicks "Next Sentence" button
     } else {
       this.showFeedback(false, results);
       this.isSubmitted = true;
@@ -1899,10 +1862,8 @@ class SentenceBuilder {
       this.updateSubmitButton();
       this.updateStats();
 
-      // In practice mode, allow user to continue
       if (this.mastery.isPracticeMode) {
-        this.elements.sentenceHint.textContent =
-          `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
+        this.elements.sentenceHint.textContent = `💡 Practice mode: Click "Next Sentence" to continue, or fix your answer.`;
         this.elements.sentenceHint.style.color = "#7a6f60";
       } else {
         setTimeout(() => {
@@ -2015,17 +1976,7 @@ class SentenceBuilder {
 
   buildPlayButtonHTML() {
     return `
-      <button class="play-correct-btn" id="playCorrectBtn" title="Play correct sentence" style="
-        background: none;
-        border: none;
-        font-size: 1.2rem;
-        cursor: pointer;
-        color: #4a7a8a;
-        padding: 0 4px;
-        transition: transform 0.15s;
-        vertical-align: middle;
-        margin-left: 8px;
-      ">🔊</button>
+      <button class="play-correct-btn" id="playCorrectBtn" title="Play correct sentence">🔊</button>
     `;
   }
 
@@ -2042,9 +1993,9 @@ class SentenceBuilder {
   buildCorrectSentenceHTML() {
     const correctedSentence = this.buildCorrectSentence();
     return `
-      <div class="grammar-hint" style="margin-top:8px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
-        <strong>Correct sentence:</strong>
-        <span>${correctedSentence}</span>
+      <div class="correct-sentence-container">
+        <strong class="correct-sentence-label">✅ Correct sentence:</strong>
+        <span class="correct-sentence-text">${correctedSentence}</span>
         ${this.buildPlayButtonHTML()}
       </div>
     `;
@@ -2058,6 +2009,10 @@ class SentenceBuilder {
     const area = this.elements.feedbackArea;
     const title = this.elements.feedbackTitle;
     const detail = this.elements.feedbackDetail;
+
+    // Clear any existing buttons from previous feedback
+    const existingButtons = area.querySelectorAll('.feedback-action-btn');
+    existingButtons.forEach(btn => btn.remove());
 
     area.classList.add("visible");
     area.className = "feedback-area visible";
@@ -2073,12 +2028,54 @@ class SentenceBuilder {
         default: `✅ Correct! Well done!${practiceNote}`,
       };
       title.textContent = messages[this.mode] || messages.default;
-      detail.innerHTML =
-        this.mode === "select-order"
-          ? `You selected the right words and arranged them perfectly!${this.mastery.isPracticeMode ? " (Practice mode — stats not tracked)" : ""}`
-          : this.mode === "order"
-            ? `You arranged all the words correctly!${this.mastery.isPracticeMode ? " (Practice mode — stats not tracked)" : ""}`
-            : `You placed all the words correctly!${this.mastery.isPracticeMode ? " (Practice mode — stats not tracked)" : ""}`;
+
+      let detailHtml = "";
+      if (this.mastery.isPracticeMode) {
+        detailHtml = `You placed all the words correctly! (Practice mode — stats not tracked)`;
+      } else {
+        detailHtml =
+          this.mode === "select-order"
+            ? `You selected the right words and arranged them perfectly!`
+            : this.mode === "order"
+              ? `You arranged all the words correctly!`
+              : `You placed all the words correctly!`;
+      }
+
+      detail.innerHTML = detailHtml;
+
+      // ALWAYS add the Next Sentence button for correct answers
+      const btnContainer = document.createElement('div');
+      btnContainer.className = 'feedback-action-btn';
+      btnContainer.style.marginTop = '14px';
+      
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'action-btn secondary';
+      nextBtn.textContent = '➡️ Next Sentence';
+      nextBtn.style.fontSize = '0.85rem';
+      nextBtn.style.padding = '8px 24px';
+      nextBtn.style.cursor = 'pointer';
+      
+      nextBtn.addEventListener('click', () => {
+        this.isSubmitted = false;
+        this.isSubmitting = false;
+        this.updateSubmitButton();
+        this.hideFeedback();
+        this.loadNextSentence();
+      });
+      
+      // Add hover effect
+      nextBtn.addEventListener('mouseenter', () => {
+        nextBtn.style.transform = 'scale(0.97)';
+        nextBtn.style.background = '#7a6a5a';
+      });
+      nextBtn.addEventListener('mouseleave', () => {
+        nextBtn.style.transform = 'scale(1)';
+        nextBtn.style.background = '#8a7a6a';
+      });
+      
+      btnContainer.appendChild(nextBtn);
+      area.appendChild(btnContainer);
+      
     } else {
       switch (this.mode) {
         case "select-order":
@@ -2097,33 +2094,12 @@ class SentenceBuilder {
     title.textContent = "❌ Not quite right.";
     let detailHtml = "";
 
-    if (data && Array.isArray(data)) {
-      const wrongBlanks = data.filter((r) => !r.correct);
-      if (wrongBlanks.length > 0) {
-        detailHtml += "<p><strong>Correct answers:</strong></p>";
-        for (const wrong of wrongBlanks) {
-          const blankNum = this.blankIndices.indexOf(wrong.blankIndex) + 1;
-          const correctDisplay = this.buildDisplayWord(wrong.correct.original);
-          const placedDisplay = wrong.placed
-            ? this.buildDisplayWord(wrong.placed.original)
-            : "???";
-
-          detailHtml += `
-            <p>
-              Blank ${blankNum}: 
-              <span class="wrong-word">${placedDisplay}</span> 
-              → 
-              <span class="correct-word">${correctDisplay}</span>
-            </p>
-          `;
-        }
-      }
-    }
-
+    // Show grammar hint if available
     if (this.currentSentence.grammarHint) {
       detailHtml += `<div class="grammar-hint">💡 ${this.currentSentence.grammarHint}</div>`;
     }
 
+    // Show the correct sentence with highlighted words
     detailHtml += this.buildCorrectSentenceHTML();
     detailHtml += this.buildNextButtonHTML();
 
@@ -2136,40 +2112,13 @@ class SentenceBuilder {
 
     let detailHtml = '<div style="margin-top:8px;">';
 
-    // User's attempt - with color coding showing errors
-    detailHtml += "<p><strong>Your attempt:</strong></p>";
-    detailHtml +=
-      '<p style="font-size:1.1rem;padding:10px;background:rgba(255,255,255,0.6);border-radius:8px;">';
-    for (let i = 0; i < this.words.length; i++) {
-      const wordIndex = this.placements[i];
-      if (wordIndex !== null) {
-        const word = this.wordBank[wordIndex];
-        const isCorrect = data && data[i] ? data[i].isCorrect : false;
-        const displayHtml = this.buildDisplayWord(word.original, true);
-        detailHtml += `<span style="${isCorrect ? "color:#2d7a4a;" : "color:#b34a4a;text-decoration:underline;font-weight:bold;"}">${displayHtml}</span>`;
-      } else {
-        detailHtml += `<span style="color:#b8a58b;">___</span>`;
-      }
-      if (i < this.words.length - 1) detailHtml += " ";
-    }
-    detailHtml += "</p>";
-
-    // Correct sentence with play button
-    detailHtml +=
-      '<p style="margin-top:8px;"><strong>Correct sentence:</strong></p>';
-    detailHtml +=
-      '<p style="font-size:1.1rem;padding:10px;background:rgba(255,255,255,0.6);border-radius:8px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">';
-    for (let i = 0; i < this.words.length; i++) {
-      detailHtml += this.buildDisplayWord(this.words[i].original);
-      if (i < this.words.length - 1) detailHtml += " ";
-    }
-    detailHtml += ` ${this.buildPlayButtonHTML()}`;
-    detailHtml += "</p>";
-
     // Grammar hint
     if (this.currentSentence.grammarHint) {
       detailHtml += `<div class="grammar-hint">💡 ${this.currentSentence.grammarHint}</div>`;
     }
+
+    // Show correct sentence using the same format as Fill mode
+    detailHtml += this.buildCorrectSentenceHTML();
 
     detailHtml += this.buildNextButtonHTML();
     detailHtml += "</div>";
@@ -2182,52 +2131,13 @@ class SentenceBuilder {
 
     let detailHtml = '<div style="margin-top:8px;">';
 
-    // Check for missing words - show a simple message
-    if (data && Array.isArray(data)) {
-      const missingEntry = data.find((r) => r.error === "missing_word");
-      if (missingEntry && missingEntry.missingWords) {
-        detailHtml += `<p><strong>⚠️ Missing correct words:</strong> ${missingEntry.missingWords.join("、")}</p>`;
-      }
-    }
-
-    // User's attempt - with color coding showing errors
-    detailHtml += "<p><strong>Your attempt:</strong></p>";
-    detailHtml +=
-      '<p style="font-size:1.1rem;padding:10px;background:rgba(255,255,255,0.6);border-radius:8px;">';
-    for (let i = 0; i < this.words.length; i++) {
-      const wordIndex = this.placements[i];
-      if (wordIndex !== null) {
-        const word = this.wordBank[wordIndex];
-        const isCorrect = data && data[i] ? data[i].isCorrect : false;
-        const displayHtml = this.buildDisplayWord(word.original, true);
-        if (word.isDistractor) {
-          detailHtml += `<span style="color:#b34a4a;text-decoration:line-through;font-weight:bold;">${displayHtml}⚠️</span>`;
-        } else {
-          detailHtml += `<span style="${isCorrect ? "color:#2d7a4a;" : "color:#b34a4a;text-decoration:underline;font-weight:bold;"}">${displayHtml}</span>`;
-        }
-      } else {
-        detailHtml += `<span style="color:#b8a58b;">___</span>`;
-      }
-      if (i < this.words.length - 1) detailHtml += " ";
-    }
-    detailHtml += "</p>";
-
-    // Correct sentence with play button
-    detailHtml +=
-      '<p style="margin-top:8px;"><strong>Correct sentence:</strong></p>';
-    detailHtml +=
-      '<p style="font-size:1.1rem;padding:10px;background:rgba(255,255,255,0.6);border-radius:8px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">';
-    for (let i = 0; i < this.words.length; i++) {
-      detailHtml += this.buildDisplayWord(this.words[i].original);
-      if (i < this.words.length - 1) detailHtml += " ";
-    }
-    detailHtml += ` ${this.buildPlayButtonHTML()}`;
-    detailHtml += "</p>";
-
     // Grammar hint
     if (this.currentSentence.grammarHint) {
       detailHtml += `<div class="grammar-hint">💡 ${this.currentSentence.grammarHint}</div>`;
     }
+
+    // Show correct sentence using the same format as Fill mode
+    detailHtml += this.buildCorrectSentenceHTML();
 
     detailHtml += this.buildNextButtonHTML();
     detailHtml += "</div>";
@@ -2246,7 +2156,6 @@ class SentenceBuilder {
       const newPlayBtn = playBtn.cloneNode(true);
       playBtn.parentNode.replaceChild(newPlayBtn, playBtn);
 
-      // Add hover effect
       newPlayBtn.addEventListener("mouseenter", () => {
         newPlayBtn.style.transform = "scale(1.2)";
       });
@@ -2267,7 +2176,7 @@ class SentenceBuilder {
       });
     }
 
-    // Next Sentence button - FIXED
+    // Next Sentence button
     const nextBtn = document.getElementById("nextAfterWrongBtn");
     if (nextBtn) {
       const newNextBtn = nextBtn.cloneNode(true);
@@ -2291,7 +2200,7 @@ class SentenceBuilder {
         const displayWord = this.buildDisplayWord(word.original);
 
         if (isBlank) {
-          return `<span style="color:#2d7a4a;font-weight:600;">${displayWord}</span>`;
+          return `<span class="highlight-word">${displayWord}</span>`;
         }
         return displayWord;
       })
@@ -2424,21 +2333,18 @@ class SentenceBuilder {
     // Show mode status in hint
     if (progress.isLocked) {
       const practiceLabel = modeLabels[this.mode] || this.mode;
-      const primaryLabel = modeLabels[this.mastery.primaryMode] || this.mastery.primaryMode;
-      this.elements.sentenceHint.textContent =
-        `🔒 Mastery: ${primaryLabel} (${progress.mastered}/${progress.total}) | Practicing: ${practiceLabel}. Complete ${primaryLabel} to unlock other modes!`;
+      const primaryLabel =
+        modeLabels[this.mastery.primaryMode] || this.mastery.primaryMode;
+      this.elements.sentenceHint.textContent = `🔒 Mastery: ${primaryLabel} (${progress.mastered}/${progress.total}) | Practicing: ${practiceLabel}. Complete ${primaryLabel} to unlock other modes!`;
       this.elements.sentenceHint.style.color = "#8a7a4a";
     } else if (this.mastery.isPracticeMode) {
-      this.elements.sentenceHint.textContent =
-        `🏋️ Practice mode (${this.mode}). All sentences mastered! Keep practicing!`;
+      this.elements.sentenceHint.textContent = `🏋️ Practice mode (${this.mode}). All sentences mastered! Keep practicing!`;
       this.elements.sentenceHint.style.color = "#4a8aba";
     } else if (this.mastery.allCompleted) {
-      this.elements.sentenceHint.textContent =
-        `🎉 Sprint complete! Switch to any mode for practice!`;
+      this.elements.sentenceHint.textContent = `🎉 Sprint complete! Switch to any mode for practice!`;
       this.elements.sentenceHint.style.color = "#2d7a4a";
     } else if (!this.mastery.allCompleted) {
-      this.elements.sentenceHint.textContent =
-        `📊 Mastery mode — your progress counts! (${modeStatus.primaryMode})`;
+      this.elements.sentenceHint.textContent = `📊 Mastery mode — your progress counts! (${modeStatus.primaryMode})`;
       this.elements.sentenceHint.style.color = "#2d7a4a";
     }
 
@@ -2452,16 +2358,18 @@ class SentenceBuilder {
   // ============================================================
 
   resetMasteryProgress() {
-    if (!confirm("⚠️ This will reset ALL progress for this sprint. Are you sure?")) {
+    if (
+      !confirm("⚠️ This will reset ALL progress for this sprint. Are you sure?")
+    ) {
       return;
     }
 
     console.log("🔄 Resetting mastery progress...");
     this.mastery.resetMasteryProgress();
-    
+
     // Hide completion overlay
     this.elements.completionOverlay.classList.remove("visible");
-    
+
     // Reset UI state
     this.hideFeedback();
     this.loadNextSentence();
@@ -2549,8 +2457,11 @@ class SentenceBuilder {
         order: "🔄 Order",
         "select-order": "🎯 Select",
       };
-      const currentLabel = modeLabels[this.mastery.primaryMode] || this.mastery.primaryMode;
-      alert(`🔒 Cannot change mastery mode mid-sprint!\n\nYou have progress in ${currentLabel} mode.\n\nComplete the sprint or use "Reset Mastery Progress" to switch.`);
+      const currentLabel =
+        modeLabels[this.mastery.primaryMode] || this.mastery.primaryMode;
+      alert(
+        `🔒 Cannot change mastery mode mid-sprint!\n\nYou have progress in ${currentLabel} mode.\n\nComplete the sprint or use "Reset Mastery Progress" to switch.`,
+      );
       return;
     }
 
@@ -2603,9 +2514,12 @@ class SentenceBuilder {
         order: "🔄 Order",
         "select-order": "🎯 Select",
       };
-      const primaryLabel = modeLabels[this.mastery.primaryMode] || this.mastery.primaryMode;
+      const primaryLabel =
+        modeLabels[this.mastery.primaryMode] || this.mastery.primaryMode;
       const targetLabel = modeLabels[mode] || mode;
-      console.warn(`⚠️ Cannot switch to ${targetLabel} mode. Complete ${primaryLabel} mastery first!`);
+      console.warn(
+        `⚠️ Cannot switch to ${targetLabel} mode. Complete ${primaryLabel} mastery first!`,
+      );
       this.elements.sentenceHint.textContent = `🔒 Cannot switch to ${targetLabel} mode. Complete ${primaryLabel} mastery first! (${progress.mastered}/${progress.total})`;
       this.elements.sentenceHint.style.color = "#b34a4a";
       // Flash the hint to draw attention
@@ -2945,7 +2859,9 @@ class SentenceBuilder {
     console.log("  - completeSprint()   → Auto-complete sprint");
     console.log("  - resetSprint()      → Reset sprint");
     console.log("  - resetMastery()     → Reset mastery progress only");
-    console.log("  - setMode(mode)      → Switch modes (fill/order/select-order)");
+    console.log(
+      "  - setMode(mode)      → Switch modes (fill/order/select-order)",
+    );
     console.log("  - setPrimaryMode(mode) → Set mastery mode");
     console.log("  - state()            → Show current state");
   }
