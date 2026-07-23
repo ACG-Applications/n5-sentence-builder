@@ -107,6 +107,7 @@ class SentenceBuilder {
     this.buildCorrectSentence = this.buildCorrectSentence.bind(this);
     this.hideFeedback = this.hideFeedback.bind(this);
     this.updateSubmitButton = this.updateSubmitButton.bind(this);
+    this.updateTtsButton = this.updateTtsButton.bind(this);
     this.updateStatsAndFeedback = this.updateStatsAndFeedback.bind(this);
     this.splitSentenceWords = this.splitSentenceWords.bind(this);
     this.calculateBlanks = this.calculateBlanks.bind(this);
@@ -666,8 +667,9 @@ class SentenceBuilder {
     this.updateStats();
     this.hideFeedback();
 
-    this.elements.submitBtn.disabled = true;
-    this.elements.sentenceTtsBtn.disabled = false;
+    // Initialize both buttons based on fill state
+    this.updateSubmitButton();
+    this.updateTtsButton();
 
     // Update status bar after loading
     this.syncModeUI();
@@ -1538,6 +1540,17 @@ class SentenceBuilder {
   }
 
   // ============================================================
+  // UPDATE TTS BUTTON - NEW METHOD
+  // ============================================================
+
+  updateTtsButton() {
+    const allFilled = this.blankIndices.every(
+      (idx) => this.placements[idx] !== null,
+    );
+    this.elements.sentenceTtsBtn.disabled = !allFilled;
+  }
+
+  // ============================================================
   // UI INTERACTIONS
   // ============================================================
 
@@ -1602,6 +1615,7 @@ class SentenceBuilder {
     this.renderSentence();
     this.renderWordBank();
     this.updateSubmitButton();
+    this.updateTtsButton();
   }
 
   placeWordOrder(blankIndex) {
@@ -1621,6 +1635,7 @@ class SentenceBuilder {
     this.renderSentenceOrder();
     this.renderWordBank();
     this.updateSubmitButton();
+    this.updateTtsButton();
   }
 
   placeWordSelectOrder(blankIndex) {
@@ -1639,6 +1654,7 @@ class SentenceBuilder {
     this.renderSentenceSelectOrder();
     this.renderWordBank();
     this.updateSubmitButton();
+    this.updateTtsButton();
   }
 
   removeWord(blankIndex) {
@@ -1665,6 +1681,7 @@ class SentenceBuilder {
     this.renderSentence();
     this.renderWordBank();
     this.updateSubmitButton();
+    this.updateTtsButton();
   }
 
   removeWordOrder(blankIndex) {
@@ -1680,6 +1697,7 @@ class SentenceBuilder {
     this.renderSentenceOrder();
     this.renderWordBank();
     this.updateSubmitButton();
+    this.updateTtsButton();
   }
 
   removeWordSelectOrder(blankIndex) {
@@ -1693,6 +1711,7 @@ class SentenceBuilder {
     this.renderSentenceSelectOrder();
     this.renderWordBank();
     this.updateSubmitButton();
+    this.updateTtsButton();
   }
 
   // ============================================================
@@ -2520,6 +2539,7 @@ class SentenceBuilder {
         this.renderWordBank();
         this.hideFeedback();
         this.updateSubmitButton();
+        this.updateTtsButton();
       }
 
       console.log(`✅ Primary mode changed to: ${mode}`);
@@ -2583,6 +2603,7 @@ class SentenceBuilder {
       this.renderWordBank();
       this.hideFeedback();
       this.updateSubmitButton();
+      this.updateTtsButton();
       console.log(`✅ Sentence reloaded in ${mode} mode`);
     }
 
